@@ -1,0 +1,328 @@
+---
+const specs = [
+  {
+    cat: 'Analizor de rețea',
+    items: [
+      'Janitza UMG 801-PROe — trifazat',
+      'Măsurare U, I, P, Q, S, PF, THD, kWh',
+      'Comunicație RS485 / Modbus RTU',
+      'Precizie clasa 0.5S',
+    ],
+    color: 'green',
+  },
+  {
+    cat: 'Gateway & comunicații',
+    items: [
+      'Convertor RS485 → Modbus TCP/IP',
+      'Mini PC local (Linux Debian/Ubuntu)',
+      'Home Assistant ca middleware',
+      'Broker MQTT Mosquitto',
+    ],
+    color: 'cyan',
+  },
+  {
+    cat: 'Stocare & vizualizare',
+    items: [
+      'InfluxDB — stocare date time-series',
+      'Grafana — dashboard configurabil',
+      'Alerte la depășire prag (email / Telegram)',
+      'Retenție date configurabilă (zile/luni)',
+    ],
+    color: 'amber',
+  },
+  {
+    cat: 'Acces remote securizat',
+    items: [
+      'Cloudflare Tunnel → domeniu propriu',
+      'Nginx reverse proxy intern',
+      'Autentificare cu user/parolă + 2FA',
+      'HTTPS — certificat automat Let\'s Encrypt',
+    ],
+    color: 'green',
+  },
+];
+---
+
+<section id="proiect" class="demo-section">
+  <div class="demo-bg-glow"></div>
+  <div class="container">
+    <div class="demo-header">
+      <p class="section-label">Proiect demonstrativ</p>
+      <h2 class="section-title">Tablou electric inteligent<br>cu monitorizare completă</h2>
+      <p class="section-subtitle">
+        Sistem funcțional implementat în laboratorul EB104, bazat pe analizor trifazat
+        Janitza, infrastructură locală și acces remote securizat prin Cloudflare Tunnel.
+      </p>
+    </div>
+
+    <div class="demo-grid">
+      <!-- Left: images -->
+      <div class="demo-visuals">
+        <div class="img-primary-wrap">
+          <img
+            src="/images/monitorizare-tablou-electric.png"
+            alt="Dashboard monitorizare tablou electric EB104"
+            class="img-primary"
+            loading="lazy"
+          />
+          <div class="img-primary-overlay">
+            <span class="tbadge green">
+              <span class="pulse-dot" style="width:6px;height:6px;"></span>
+              Live Dashboard
+            </span>
+          </div>
+        </div>
+
+        <div class="img-secondary-wrap">
+          <img
+            src="/images/monitorizare%20putere.png"
+            alt="Grafic putere electrică monitorizată în timp real"
+            class="img-secondary"
+            loading="lazy"
+          />
+          <div class="img-sec-label">Putere activă — grafic temporal Grafana</div>
+        </div>
+
+        <!-- Mini stat cards -->
+        <div class="mini-stats">
+          <div class="mini-stat">
+            <span class="ms-val">3×400V</span>
+            <span class="ms-lbl">Rețea trifazată</span>
+          </div>
+          <div class="mini-stat">
+            <span class="ms-val">±0.5%</span>
+            <span class="ms-lbl">Precizie măsurare</span>
+          </div>
+          <div class="mini-stat">
+            <span class="ms-val">&lt;1s</span>
+            <span class="ms-lbl">Update date</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: specs -->
+      <div class="demo-specs">
+        {specs.map(s => (
+          <div class={`spec-block spec-${s.color}`}>
+            <h4 class={`spec-cat cat-${s.color}`}>{s.cat}</h4>
+            <ul class="spec-list">
+              {s.items.map(item => (
+                <li class="spec-item">
+                  <span class={`spec-dot dot-${s.color}`}></span>
+                  {item}
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+
+        <div class="demo-cta">
+          <a href="#contact" class="btn btn-primary">Discutăm un proiect similar</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .demo-section {
+    background: var(--bg2);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .demo-bg-glow {
+    position: absolute;
+    bottom: -20%;
+    left: -10%;
+    width: 55%;
+    height: 70%;
+    background: radial-gradient(ellipse, rgba(16,185,129,0.05) 0%, transparent 65%);
+    pointer-events: none;
+  }
+
+  .demo-header {
+    margin-bottom: 64px;
+    max-width: 680px;
+  }
+
+  /* Grid */
+  .demo-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 64px;
+    align-items: start;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Visuals */
+  .demo-visuals {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .img-primary-wrap {
+    position: relative;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    border: 1px solid var(--border-med);
+    box-shadow: var(--shadow-lg);
+  }
+
+  .img-primary {
+    width: 100%;
+    height: 280px;
+    object-fit: cover;
+    object-position: top center;
+    display: block;
+  }
+
+  .img-primary-overlay {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+  }
+
+  .img-secondary-wrap {
+    position: relative;
+    border-radius: var(--radius);
+    overflow: hidden;
+    border: 1px solid var(--border);
+    background: var(--card);
+  }
+
+  .img-secondary {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+    object-position: center;
+    display: block;
+    opacity: 0.9;
+  }
+
+  .img-sec-label {
+    padding: 8px 12px;
+    font-size: 0.75rem;
+    color: var(--text-dim);
+    background: var(--card);
+    border-top: 1px solid var(--border);
+    font-family: 'Courier New', monospace;
+  }
+
+  /* Mini stats */
+  .mini-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+  }
+
+  .mini-stat {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px 12px;
+    text-align: center;
+    transition: var(--transition);
+  }
+
+  .mini-stat:hover {
+    border-color: var(--border-med);
+    background: var(--card-hover);
+  }
+
+  .ms-val {
+    display: block;
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: var(--green-light);
+    font-family: 'Courier New', monospace;
+    margin-bottom: 2px;
+  }
+
+  .ms-lbl {
+    font-size: 0.72rem;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  /* Specs */
+  .demo-specs {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+
+  .spec-block {
+    background: var(--card);
+    border-radius: var(--radius);
+    padding: 20px 20px 18px;
+    border: 1px solid var(--border);
+    transition: var(--transition);
+  }
+
+  .spec-block:hover {
+    border-color: var(--border-med);
+    background: var(--card-hover);
+  }
+
+  .spec-green:hover { border-left: 2px solid var(--green); }
+  .spec-cyan:hover  { border-left: 2px solid var(--cyan); }
+  .spec-amber:hover { border-left: 2px solid var(--amber); }
+
+  .spec-cat {
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 12px;
+  }
+
+  .cat-green { color: var(--green); }
+  .cat-cyan  { color: var(--cyan); }
+  .cat-amber { color: var(--amber); }
+
+  .spec-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+  }
+
+  .spec-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    line-height: 1.4;
+  }
+
+  .spec-dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    margin-top: 6px;
+  }
+
+  .dot-green { background: var(--green); }
+  .dot-cyan  { background: var(--cyan); }
+  .dot-amber { background: var(--amber); }
+
+  .demo-cta {
+    margin-top: 8px;
+  }
+
+  @media (max-width: 900px) {
+    .demo-grid { grid-template-columns: 1fr; gap: 40px; }
+    .img-primary { height: 220px; }
+  }
+
+  @media (max-width: 480px) {
+    .mini-stats { grid-template-columns: repeat(3, 1fr); gap: 8px; }
+    .ms-val { font-size: 0.9rem; }
+  }
+</style>

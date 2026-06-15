@@ -1,0 +1,254 @@
+---
+export interface Props {
+  title?: string;
+  description?: string;
+}
+
+const {
+  title = 'EB104 Lab — Monitorizare Energetică & Automatizări',
+  description = 'Soluții complete pentru monitorizare energetică, automatizări IoT, tablouri electrice inteligente și infrastructură locală. DMAECS-EB104-lab.'
+} = Astro.props;
+---
+<!doctype html>
+<html lang="ro">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <meta name="description" content={description} />
+  <meta name="robots" content="index, follow" />
+  <title>{title}</title>
+  <style is:global>
+    :root {
+      --bg:         #08121e;
+      --bg2:        #0b1826;
+      --bg3:        #0e1f30;
+      --card:       #0d1e30;
+      --card-hover: #122436;
+
+      --green:       #10b981;
+      --green-light: #34d399;
+      --green-dim:   rgba(16,185,129,0.12);
+      --cyan:        #06b6d4;
+      --cyan-dim:    rgba(6,182,212,0.12);
+      --amber:       #f59e0b;
+      --amber-dim:   rgba(245,158,11,0.12);
+      --red:         #ef4444;
+
+      --border:      rgba(16,185,129,0.12);
+      --border-med:  rgba(16,185,129,0.2);
+      --border-cyan: rgba(6,182,212,0.2);
+
+      --text:       #e8f0f8;
+      --text-muted: #7a9bb8;
+      --text-dim:   #3a566e;
+
+      --radius-sm: 4px;
+      --radius:    8px;
+      --radius-lg: 14px;
+
+      --transition: all 0.22s ease;
+      --shadow:     0 4px 24px rgba(0,0,0,0.45);
+      --shadow-lg:  0 12px 48px rgba(0,0,0,0.55);
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html { scroll-behavior: smooth; font-size: 16px; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      line-height: 1.65;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      overflow-x: hidden;
+    }
+
+    a { color: inherit; text-decoration: none; }
+
+    img {
+      max-width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    /* ─── Container ─── */
+    .container {
+      max-width: 1240px;
+      margin: 0 auto;
+      padding: 0 28px;
+    }
+
+    @media (max-width: 768px) {
+      .container { padding: 0 18px; }
+    }
+
+    /* ─── Buttons ─── */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 13px 28px;
+      border-radius: var(--radius-sm);
+      font-size: 0.93rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: var(--transition);
+      border: none;
+      text-decoration: none;
+      letter-spacing: 0.015em;
+      white-space: nowrap;
+    }
+
+    .btn-primary {
+      background: var(--green);
+      color: #07120d;
+    }
+    .btn-primary:hover {
+      background: var(--green-light);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 24px rgba(16,185,129,0.38);
+    }
+
+    .btn-secondary {
+      background: transparent;
+      color: var(--text);
+      border: 1.5px solid var(--border-med);
+    }
+    .btn-secondary:hover {
+      border-color: var(--green);
+      color: var(--green-light);
+      transform: translateY(-2px);
+    }
+
+    .btn-outline-cyan {
+      background: transparent;
+      color: var(--cyan);
+      border: 1.5px solid var(--border-cyan);
+    }
+    .btn-outline-cyan:hover {
+      background: var(--cyan-dim);
+      transform: translateY(-2px);
+    }
+
+    /* ─── Section spacing ─── */
+    section { padding: 96px 0; }
+
+    @media (max-width: 768px) {
+      section { padding: 64px 0; }
+    }
+
+    /* ─── Section headings ─── */
+    .section-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.76rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--green);
+      margin-bottom: 14px;
+    }
+    .section-label::before {
+      content: '';
+      display: block;
+      width: 28px;
+      height: 2px;
+      background: var(--green);
+      flex-shrink: 0;
+    }
+
+    .section-title {
+      font-size: clamp(1.9rem, 3.8vw, 2.8rem);
+      font-weight: 800;
+      line-height: 1.12;
+      letter-spacing: -0.02em;
+      color: var(--text);
+      margin-bottom: 18px;
+    }
+
+    .section-subtitle {
+      font-size: 1.05rem;
+      color: var(--text-muted);
+      max-width: 620px;
+      line-height: 1.72;
+    }
+
+    /* ─── Tech badge ─── */
+    .tbadge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 4px 11px;
+      background: var(--cyan-dim);
+      border: 1px solid var(--border-cyan);
+      border-radius: 3px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--cyan);
+      font-family: 'Courier New', Consolas, monospace;
+      white-space: nowrap;
+    }
+
+    .tbadge.green {
+      background: var(--green-dim);
+      border-color: var(--border-med);
+      color: var(--green-light);
+    }
+
+    .tbadge.amber {
+      background: var(--amber-dim);
+      border-color: rgba(245,158,11,0.25);
+      color: var(--amber);
+    }
+
+    /* ─── Dividers ─── */
+    .section-divider {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 0;
+    }
+
+    /* ─── Pulse dot ─── */
+    .pulse-dot {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 8px var(--green);
+      animation: pulseDot 2.2s infinite;
+      flex-shrink: 0;
+    }
+
+    @keyframes pulseDot {
+      0%, 100% { opacity: 1; box-shadow: 0 0 8px var(--green); }
+      50%       { opacity: 0.35; box-shadow: 0 0 3px var(--green); }
+    }
+
+    /* ─── Grid texture utility ─── */
+    .grid-bg {
+      background-image:
+        linear-gradient(rgba(16,185,129,0.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(16,185,129,0.035) 1px, transparent 1px);
+      background-size: 56px 56px;
+    }
+
+    /* ─── Scrollbar ─── */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--bg3); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--green-dim); }
+  </style>
+</head>
+<body>
+  <slot />
+</body>
+</html>

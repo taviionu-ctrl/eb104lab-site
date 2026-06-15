@@ -1,0 +1,189 @@
+---
+---
+<header class="site-header" id="site-header">
+  <div class="container hdr-inner">
+    <a href="#" class="logo">
+      <svg class="logo-icon" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect width="28" height="28" rx="5" fill="#0d1e30"/>
+        <polygon points="17,3 10,15 15,15 11,25 19,13 14,13" fill="#10b981"/>
+        <rect x="2" y="12.5" width="5" height="2" rx="1" fill="#06b6d4" opacity="0.8"/>
+        <rect x="21" y="12.5" width="5" height="2" rx="1" fill="#06b6d4" opacity="0.8"/>
+      </svg>
+      <div class="logo-text">
+        <span class="logo-main">EB104 Lab</span>
+        <span class="logo-sub">DMAECS</span>
+      </div>
+    </a>
+
+    <nav class="main-nav" id="main-nav">
+      <a href="#servicii" class="nav-link">Servicii</a>
+      <a href="#solutii" class="nav-link">Soluții</a>
+      <a href="#proiect" class="nav-link">Proiect Demo</a>
+      <a href="#tehnologii" class="nav-link">Tehnologii</a>
+      <a href="#contact" class="btn btn-primary nav-cta">Solicită o discuție</a>
+    </nav>
+
+    <button class="menu-toggle" id="menu-toggle" aria-label="Meniu">
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
+  </div>
+</header>
+
+<style>
+  .site-header {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 1000;
+    background: rgba(8, 18, 30, 0.92);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border-bottom: 1px solid var(--border);
+    transition: var(--transition);
+  }
+
+  .hdr-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 68px;
+  }
+
+  /* Logo */
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+  }
+
+  .logo-icon {
+    width: 34px;
+    height: 34px;
+    flex-shrink: 0;
+  }
+
+  .logo-text {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.1;
+  }
+
+  .logo-main {
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: var(--text);
+    letter-spacing: -0.01em;
+  }
+
+  .logo-sub {
+    font-size: 0.6rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--green);
+    font-family: 'Courier New', monospace;
+  }
+
+  /* Nav */
+  .main-nav {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .nav-link {
+    padding: 8px 14px;
+    font-size: 0.88rem;
+    font-weight: 500;
+    color: var(--text-muted);
+    border-radius: var(--radius-sm);
+    transition: var(--transition);
+    text-decoration: none;
+  }
+
+  .nav-link:hover {
+    color: var(--text);
+    background: var(--green-dim);
+  }
+
+  .nav-cta {
+    margin-left: 8px;
+    padding: 9px 22px;
+    font-size: 0.87rem;
+  }
+
+  /* Mobile toggle */
+  .menu-toggle {
+    display: none;
+    flex-direction: column;
+    gap: 5px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 6px;
+  }
+
+  .menu-toggle span {
+    display: block;
+    width: 24px;
+    height: 2px;
+    background: var(--text);
+    border-radius: 2px;
+    transition: var(--transition);
+  }
+
+  /* Mobile */
+  @media (max-width: 860px) {
+    .menu-toggle { display: flex; }
+
+    .main-nav {
+      display: none;
+      position: fixed;
+      top: 68px; left: 0; right: 0;
+      flex-direction: column;
+      align-items: stretch;
+      padding: 20px 18px 28px;
+      background: rgba(8, 18, 30, 0.98);
+      border-bottom: 1px solid var(--border);
+      gap: 4px;
+    }
+
+    .main-nav.open { display: flex; }
+
+    .nav-link {
+      padding: 12px 16px;
+      font-size: 0.95rem;
+    }
+
+    .nav-cta {
+      margin: 12px 0 0;
+      justify-content: center;
+    }
+  }
+</style>
+
+<script>
+  const toggle = document.getElementById('menu-toggle');
+  const nav = document.getElementById('main-nav');
+  const header = document.getElementById('site-header');
+
+  toggle?.addEventListener('click', () => {
+    nav?.classList.toggle('open');
+  });
+
+  // Close on nav link click
+  nav?.querySelectorAll('a').forEach(link => {
+    link.addEventListener('click', () => nav.classList.remove('open'));
+  });
+
+  // Scroll indicator
+  window.addEventListener('scroll', () => {
+    if (window.scrollY > 20) {
+      header?.style.setProperty('box-shadow', '0 4px 30px rgba(0,0,0,0.4)');
+    } else {
+      header?.style.setProperty('box-shadow', 'none');
+    }
+  });
+</script>

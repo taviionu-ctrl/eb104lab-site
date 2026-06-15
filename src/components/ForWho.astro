@@ -1,0 +1,171 @@
+---
+const audience = [
+  {
+    icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+    </svg>`,
+    title: 'Laboratoare universitare & tehnice',
+    desc: 'Proiecte de cercetare, demonstrații didactice și sisteme de monitorizare pentru laboratoare de electronică, energetică sau automatizări.',
+    match: 'Potrivit dacă: aveți aparatură de laborator și vreți monitorizare sau automatizare locală.',
+  },
+  {
+    icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
+    </svg>`,
+    title: 'Spații tehnice & infrastructură',
+    desc: 'Server rooms, UPS-uri, distribuție electrică, pompe, HVAC. Sisteme unde contează monitorizarea consumului și alertele automate.',
+    match: 'Potrivit dacă: aveți echipamente tehnice și vreți vizibilitate completă asupra consumului.',
+  },
+  {
+    icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-4 0v2"/>
+      <line x1="12" y1="12" x2="12" y2="16"/><circle cx="12" cy="12" r="1" fill="currentColor"/>
+    </svg>`,
+    title: 'Clădiri de birouri mici/medii',
+    desc: 'Reducerea costurilor energetice prin identificarea vârfurilor de consum, analiză pe circuite și optimizare factor de putere.',
+    match: 'Potrivit dacă: plata facturii de curent este semnificativă și vreți să înțelegeți consumul.',
+  },
+  {
+    icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/>
+    </svg>`,
+    title: 'Proiecte educaționale & demo',
+    desc: 'Platforme demonstrative pentru studenți, elevi sau echipe tehnice care vor să înțeleagă IoT, automatizări și sisteme de monitorizare în practică.',
+    match: 'Potrivit dacă: aveți un proiect educațional sau un prototip tehnic de prezentat.',
+  },
+  {
+    icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+      <polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/>
+    </svg>`,
+    title: 'IMM-uri & ateliere industriale',
+    desc: 'Firme care vor monitorizare energetică fără a investi în soluții SCADA enterprise. Costuri rezonabile, implementare rapidă, control total.',
+    match: 'Potrivit dacă: vreți monitorizare serioasă fără preț de enterprise și fără lock-in cloud.',
+  },
+  {
+    icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+      <circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+    </svg>`,
+    title: 'Școli tehnice & colegii',
+    desc: 'Instalații educaționale cu tablouri electrice inteligente pentru pregătire practică, măsurători reale și integrare în curriculum tehnic.',
+    match: 'Potrivit dacă: doriți o instalație reală, funcțională, pentru activități practice și demonstrații.',
+  },
+];
+---
+
+<section id="pentru-cine" class="forwho-section">
+  <div class="container">
+    <div class="fw-header">
+      <p class="section-label">Pentru cine</p>
+      <h2 class="section-title">Soluții adaptate<br>nevoilor reale</h2>
+      <p class="section-subtitle">
+        Nu vindem produse standardizate. Fiecare instalație este configurată
+        în funcție de cerințele specifice ale spațiului și obiectivele clientului.
+      </p>
+    </div>
+
+    <div class="fw-grid">
+      {audience.map(item => (
+        <div class="fw-card">
+          <div class="fw-icon" set:html={item.icon} />
+          <h3 class="fw-title">{item.title}</h3>
+          <p class="fw-desc">{item.desc}</p>
+          <div class="fw-match">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+            {item.match}
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
+
+<style>
+  .forwho-section { background: var(--bg2); }
+
+  .fw-header {
+    margin-bottom: 60px;
+    max-width: 640px;
+  }
+
+  .fw-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px;
+  }
+
+  .fw-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 26px 22px 22px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    transition: var(--transition);
+  }
+
+  .fw-card:hover {
+    border-color: var(--border-med);
+    background: var(--card-hover);
+    transform: translateY(-3px);
+    box-shadow: var(--shadow);
+  }
+
+  .fw-icon {
+    width: 42px;
+    height: 42px;
+    color: var(--green);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--green-dim);
+    border-radius: var(--radius);
+    flex-shrink: 0;
+  }
+
+  .fw-icon svg { width: 22px; height: 22px; }
+
+  .fw-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1.3;
+  }
+
+  .fw-desc {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    line-height: 1.68;
+    flex: 1;
+  }
+
+  .fw-match {
+    display: flex;
+    align-items: flex-start;
+    gap: 7px;
+    font-size: 0.78rem;
+    color: var(--green);
+    line-height: 1.5;
+    padding-top: 10px;
+    border-top: 1px solid var(--border);
+    margin-top: 4px;
+  }
+
+  .fw-match svg {
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  @media (max-width: 1024px) {
+    .fw-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  @media (max-width: 640px) {
+    .fw-grid { grid-template-columns: 1fr; gap: 12px; }
+    .fw-header { margin-bottom: 36px; }
+  }
+</style>

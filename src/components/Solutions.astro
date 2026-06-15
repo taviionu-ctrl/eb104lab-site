@@ -1,0 +1,259 @@
+---
+const steps = [
+  {
+    id: '01',
+    title: 'Surse de date',
+    items: ['Senzori ESP32/ESPHome', 'Analizor Janitza (RS485)', 'PZEM-004T', 'Senzori SHT/DHT'],
+    color: 'cyan',
+    icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-4 0v2"/><line x1="12" y1="12" x2="12" y2="16"/><circle cx="12" cy="12" r="1" fill="currentColor"/>
+    </svg>`,
+  },
+  {
+    id: '02',
+    title: 'Transport date',
+    items: ['Broker MQTT local', 'Modbus TCP/IP', 'Ethernet / WiFi', 'RS485 → USB/ETH'],
+    color: 'green',
+    icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/>
+      <path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><circle cx="12" cy="20" r="1"/>
+    </svg>`,
+  },
+  {
+    id: '03',
+    title: 'Procesare & control',
+    items: ['Home Assistant', 'Node-RED (opțional)', 'Automatizări logice', 'Alerte în timp real'],
+    color: 'green',
+    icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/>
+    </svg>`,
+  },
+  {
+    id: '04',
+    title: 'Stocare date',
+    items: ['InfluxDB (time-series)', 'Retenție configurabilă', 'Backup automatizat', 'Export CSV/JSON'],
+    color: 'amber',
+    icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+      <ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/>
+      <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/>
+    </svg>`,
+  },
+  {
+    id: '05',
+    title: 'Vizualizare',
+    items: ['Dashboard Grafana', 'Grafice temporale', 'Heatmap, histograme', 'Mobile-friendly'],
+    color: 'cyan',
+    icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/>
+    </svg>`,
+  },
+  {
+    id: '06',
+    title: 'Acces & alertare',
+    items: ['Cloudflare Tunnel', 'Nginx reverse proxy', 'Notificări email/TG', 'Acces securizat HTTPS'],
+    color: 'amber',
+    icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+    </svg>`,
+  },
+];
+---
+
+<section id="solutii" class="solutions-section grid-bg">
+  <div class="container">
+    <div class="sol-header">
+      <p class="section-label">Arhitectură tehnică</p>
+      <h2 class="section-title">Flux integrat de la<br>senzor la dashboard</h2>
+      <p class="section-subtitle">
+        Un sistem complet, rulând local pe infrastructura dumneavoastră. Datele nu
+        părăsesc rețeaua internă decât prin tunelul securizat, dacă doriți acces remote.
+      </p>
+    </div>
+
+    <!-- Flow diagram -->
+    <div class="flow-pipeline">
+      {steps.map((step, i) => (
+        <>
+          <div class={`flow-node node-${step.color}`}>
+            <div class={`node-num num-${step.color}`}>{step.id}</div>
+            <div class={`node-icon icon-${step.color}`} set:html={step.icon} />
+            <h4 class="node-title">{step.title}</h4>
+            <ul class="node-items">
+              {step.items.map(item => (
+                <li>{item}</li>
+              ))}
+            </ul>
+          </div>
+          {i < steps.length - 1 && (
+            <div class={`flow-arrow arr-${step.color}`}>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                <path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+          )}
+        </>
+      ))}
+    </div>
+
+    <!-- Bottom note -->
+    <div class="sol-footer">
+      <div class="sol-note">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+        Toată infrastructura rulează local: Raspberry Pi, Mini PC, server propriu sau mașini virtuale Proxmox.
+        Cloudflare Tunnel asigură acces HTTPS securizat fără port forwarding sau IP public fix.
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .solutions-section { background: var(--bg); }
+
+  .sol-header {
+    margin-bottom: 64px;
+    max-width: 680px;
+  }
+
+  /* Pipeline */
+  .flow-pipeline {
+    display: flex;
+    align-items: flex-start;
+    gap: 0;
+    overflow-x: auto;
+    padding-bottom: 16px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+  }
+
+  /* Flow node */
+  .flow-node {
+    flex: 1;
+    min-width: 152px;
+    background: var(--card);
+    border-radius: var(--radius);
+    padding: 22px 18px 20px;
+    border: 1px solid var(--border);
+    transition: var(--transition);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    position: relative;
+  }
+
+  .flow-node:hover {
+    transform: translateY(-4px);
+    border-color: var(--border-med);
+    box-shadow: var(--shadow);
+  }
+
+  .node-green:hover { border-color: rgba(16,185,129,0.35); box-shadow: 0 8px 32px rgba(16,185,129,0.1); }
+  .node-cyan:hover  { border-color: rgba(6,182,212,0.35);  box-shadow: 0 8px 32px rgba(6,182,212,0.1); }
+  .node-amber:hover { border-color: rgba(245,158,11,0.35); box-shadow: 0 8px 32px rgba(245,158,11,0.1); }
+
+  .node-num {
+    font-size: 0.62rem;
+    font-weight: 800;
+    font-family: 'Courier New', monospace;
+    letter-spacing: 0.05em;
+    padding: 2px 7px;
+    border-radius: 3px;
+    width: fit-content;
+  }
+
+  .num-green { color: var(--green);  background: var(--green-dim); }
+  .num-cyan  { color: var(--cyan);   background: var(--cyan-dim); }
+  .num-amber { color: var(--amber);  background: var(--amber-dim); }
+
+  .node-icon {
+    width: 36px; height: 36px;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: var(--radius-sm);
+  }
+  .node-icon svg { width: 20px; height: 20px; }
+
+  .icon-green { color: var(--green); }
+  .icon-cyan  { color: var(--cyan); }
+  .icon-amber { color: var(--amber); }
+
+  .node-title {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1.2;
+  }
+
+  .node-items {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  .node-items li {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    padding-left: 12px;
+    position: relative;
+  }
+
+  .node-items li::before {
+    content: '›';
+    position: absolute;
+    left: 0;
+    color: var(--text-dim);
+  }
+
+  /* Arrow between nodes */
+  .flow-arrow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 6px;
+    flex-shrink: 0;
+    margin-top: 60px;
+  }
+
+  .arr-green { color: var(--green); opacity: 0.5; }
+  .arr-cyan  { color: var(--cyan);  opacity: 0.5; }
+  .arr-amber { color: var(--amber); opacity: 0.5; }
+
+  /* Footer note */
+  .sol-footer {
+    margin-top: 48px;
+    display: flex;
+    justify-content: center;
+  }
+
+  .sol-note {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    max-width: 700px;
+    padding: 16px 22px;
+    background: var(--card);
+    border: 1px solid var(--border-cyan);
+    border-radius: var(--radius);
+    font-size: 0.86rem;
+    color: var(--text-muted);
+    line-height: 1.65;
+  }
+
+  .sol-note svg { color: var(--cyan); flex-shrink: 0; margin-top: 1px; }
+
+  @media (max-width: 900px) {
+    .flow-pipeline {
+      flex-direction: column;
+      overflow-x: visible;
+    }
+
+    .flow-arrow {
+      transform: rotate(90deg);
+      margin: 0 auto;
+      padding: 4px 0;
+    }
+
+    .flow-node { min-width: auto; }
+  }
+</style>

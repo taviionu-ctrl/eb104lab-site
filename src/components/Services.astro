@@ -1,0 +1,229 @@
+---
+const services = [
+  {
+    icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+    </svg>`,
+    label: 'Monitorizare',
+    title: 'Monitorizare Energetică',
+    desc: 'Măsurare în timp real a tensiunii, curentului, puterii active/reactive, factorului de putere, armonicilor și energiei consummate. Analizoare trifazate cu comunicație Modbus/RS485.',
+    tags: ['Janitza', 'PZEM', 'RS485'],
+    color: 'green',
+  },
+  {
+    icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/>
+    </svg>`,
+    label: 'Automatizări',
+    title: 'Automatizări și Control',
+    desc: 'Implementare scenarii de automatizare: timer, relay, senzori de prezență, condiții logice. Integrare cu Home Assistant pentru spații tehnice, laboratoare și clădiri.',
+    tags: ['ESP32', 'Home Assistant', 'Relay'],
+    color: 'cyan',
+  },
+  {
+    icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/>
+    </svg>`,
+    label: 'Dashboard-uri',
+    title: 'Dashboard-uri și Rapoarte',
+    desc: 'Vizualizare date cu Grafana: grafice temporale, histograme, alarme vizuale. Rapoarte automate, export CSV, notificări email/Telegram la depășire prag.',
+    tags: ['Grafana', 'InfluxDB', 'Alerte'],
+    color: 'amber',
+  },
+  {
+    icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="2" y="2" width="20" height="8" rx="2"/><rect x="2" y="14" width="20" height="8" rx="2"/>
+      <line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/>
+    </svg>`,
+    label: 'Infrastructură',
+    title: 'Hosting Local & Acces Securizat',
+    desc: 'Server local pe Linux/Proxmox cu VM-uri și containere. Acces remote securizat prin Cloudflare Tunnel și Nginx reverse proxy, fără IP public, fără port forwarding.',
+    tags: ['Proxmox', 'Nginx', 'Cloudflare'],
+    color: 'green',
+  },
+  {
+    icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/>
+      <path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><circle cx="12" cy="20" r="1"/>
+    </svg>`,
+    label: 'IoT',
+    title: 'Integrare Senzori & MQTT',
+    desc: 'Configurare senzori ESP32/ESPHome: temperatură, umiditate, consum, mișcare, contact. Broker MQTT local, integrare nativă cu Home Assistant și InfluxDB.',
+    tags: ['ESPHome', 'MQTT', 'ESP32'],
+    color: 'cyan',
+  },
+  {
+    icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+    </svg>`,
+    label: 'Mentenanță',
+    title: 'Mentenanță și Extindere',
+    desc: 'Suport tehnic continuu, actualizări firmware și software, extindere cu noi senzori sau puncte de măsurare. Documentație și formare pentru echipa clientului.',
+    tags: ['Suport', 'Update OTA', 'Scalare'],
+    color: 'amber',
+  },
+];
+---
+
+<section id="servicii" class="services-section">
+  <div class="services-bg-glow"></div>
+  <div class="container">
+    <div class="services-header">
+      <p class="section-label">Ce oferim</p>
+      <h2 class="section-title">Soluții tehnice complete,<br>de la senzor la dashboard</h2>
+      <p class="section-subtitle">
+        De la instalarea senzorilor și configurarea protocoalelor industriale, până la
+        vizualizare și mentenanță — acoperim întregul flux tehnic.
+      </p>
+    </div>
+
+    <div class="services-grid">
+      {services.map(s => (
+        <article class={`service-card card-${s.color}`}>
+          <div class="card-top">
+            <div class={`card-icon icon-${s.color}`} set:html={s.icon} />
+            <span class={`card-label lbl-${s.color}`}>{s.label}</span>
+          </div>
+          <h3 class="card-title">{s.title}</h3>
+          <p class="card-desc">{s.desc}</p>
+          <div class="card-tags">
+            {s.tags.map(t => (
+              <span class={`tbadge ${s.color === 'amber' ? 'amber' : s.color === 'cyan' ? '' : 'green'}`}>{t}</span>
+            ))}
+          </div>
+        </article>
+      ))}
+    </div>
+  </div>
+</section>
+
+<style>
+  .services-section {
+    background: var(--bg2);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .services-bg-glow {
+    position: absolute;
+    top: 50%; right: -10%;
+    width: 50%; height: 70%;
+    transform: translateY(-50%);
+    background: radial-gradient(ellipse,
+      rgba(6,182,212,0.04) 0%,
+      transparent 65%);
+    pointer-events: none;
+  }
+
+  .services-header {
+    margin-bottom: 64px;
+    max-width: 680px;
+  }
+
+  .services-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+  }
+
+  /* Cards */
+  .service-card {
+    background: var(--card);
+    border-radius: var(--radius-lg);
+    padding: 28px 26px 24px;
+    border: 1px solid var(--border);
+    transition: var(--transition);
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .service-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  .card-green::before { background: linear-gradient(90deg, var(--green), transparent); }
+  .card-cyan::before  { background: linear-gradient(90deg, var(--cyan), transparent); }
+  .card-amber::before { background: linear-gradient(90deg, var(--amber), transparent); }
+
+  .service-card:hover {
+    border-color: var(--border-med);
+    background: var(--card-hover);
+    transform: translateY(-3px);
+    box-shadow: var(--shadow);
+  }
+
+  .service-card:hover::before { opacity: 1; }
+
+  .card-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .card-icon {
+    width: 42px;
+    height: 42px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius);
+    flex-shrink: 0;
+  }
+
+  .card-icon svg { width: 22px; height: 22px; }
+
+  .icon-green { color: var(--green); background: var(--green-dim); }
+  .icon-cyan  { color: var(--cyan);  background: var(--cyan-dim); }
+  .icon-amber { color: var(--amber); background: var(--amber-dim); }
+
+  .card-label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    padding: 3px 9px;
+    border-radius: 3px;
+  }
+
+  .lbl-green { color: var(--green);  background: var(--green-dim); }
+  .lbl-cyan  { color: var(--cyan);   background: var(--cyan-dim); }
+  .lbl-amber { color: var(--amber);  background: var(--amber-dim); }
+
+  .card-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1.3;
+  }
+
+  .card-desc {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    line-height: 1.68;
+    flex: 1;
+  }
+
+  .card-tags {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-top: 4px;
+  }
+
+  @media (max-width: 1024px) {
+    .services-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  @media (max-width: 640px) {
+    .services-grid { grid-template-columns: 1fr; gap: 14px; }
+    .services-header { margin-bottom: 40px; }
+  }
+</style>

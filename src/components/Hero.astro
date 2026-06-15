@@ -1,0 +1,335 @@
+---
+---
+<section id="hero" class="hero grid-bg">
+  <div class="hero-glow"></div>
+
+  <div class="container hero-inner">
+    <!-- Left: text -->
+    <div class="hero-text">
+      <p class="hero-eyebrow">
+        <span class="pulse-dot"></span>
+        Sistem activ · EB104 Lab
+      </p>
+
+      <h1 class="hero-title">
+        Monitorizare<br>
+        Energetică și<br>
+        <span class="accent-green">Automatizări</span><br>
+        Tehnice
+      </h1>
+
+      <p class="hero-sub">
+        Soluții complete pentru monitorizare consum electric, analiză calitate energie,
+        tablouri inteligente, integrare senzori IoT și dashboard-uri locale —
+        fără dependențe cloud externe obligatorii.
+      </p>
+
+      <div class="hero-actions">
+        <a href="#contact" class="btn btn-primary">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+          </svg>
+          Solicită o discuție
+        </a>
+        <a href="#servicii" class="btn btn-secondary">
+          Vezi soluțiile
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
+          </svg>
+        </a>
+      </div>
+
+      <div class="hero-stats">
+        <div class="stat">
+          <span class="stat-val">Modbus/RS485</span>
+          <span class="stat-lbl">Protocoale industriale</span>
+        </div>
+        <div class="stat-div"></div>
+        <div class="stat">
+          <span class="stat-val">MQTT + HA</span>
+          <span class="stat-lbl">Automatizare locală</span>
+        </div>
+        <div class="stat-div"></div>
+        <div class="stat">
+          <span class="stat-val">100% Local</span>
+          <span class="stat-lbl">Fără cloud obligatoriu</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right: image -->
+    <div class="hero-img-wrap">
+      <div class="img-frame">
+        <img
+          src="/images/tablou-electric.jpg"
+          alt="Tablou electric inteligent cu analizor Janitza — EB104 Lab"
+          class="hero-img"
+          loading="eager"
+        />
+        <div class="img-fade-left"></div>
+        <div class="img-overlay-bottom"></div>
+
+        <!-- Floating badges -->
+        <div class="img-badges">
+          <span class="tbadge green">Janitza UMG</span>
+          <span class="tbadge">RS485 · Modbus</span>
+          <span class="tbadge amber">3×400V / 230V</span>
+        </div>
+
+        <!-- Corner decorations -->
+        <div class="corner corner-tl"></div>
+        <div class="corner corner-tr"></div>
+        <div class="corner corner-br"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scroll hint -->
+  <div class="scroll-hint">
+    <span>Scroll</span>
+    <div class="scroll-arrow">
+      <svg width="16" height="20" viewBox="0 0 16 20" fill="none">
+        <path d="M8 1v14M2 10l6 7 6-7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+  </div>
+</section>
+
+<style>
+  .hero {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+    padding: 128px 0 80px;
+  }
+
+  .hero-glow {
+    position: absolute;
+    top: -10%;
+    left: -5%;
+    width: 65%;
+    height: 80%;
+    background: radial-gradient(ellipse at 25% 30%,
+      rgba(16,185,129,0.07) 0%,
+      rgba(6,182,212,0.04) 40%,
+      transparent 70%);
+    pointer-events: none;
+  }
+
+  .hero-inner {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 72px;
+    align-items: center;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Eyebrow */
+  .hero-eyebrow {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    font-size: 0.8rem;
+    color: var(--green-light);
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    margin-bottom: 22px;
+  }
+
+  /* Title */
+  .hero-title {
+    font-size: clamp(2.3rem, 4.2vw, 3.9rem);
+    font-weight: 900;
+    line-height: 1.06;
+    letter-spacing: -0.025em;
+    color: var(--text);
+    margin-bottom: 26px;
+  }
+
+  .accent-green { color: var(--green); }
+
+  /* Subtitle */
+  .hero-sub {
+    font-size: 1.08rem;
+    color: var(--text-muted);
+    line-height: 1.76;
+    margin-bottom: 38px;
+    max-width: 480px;
+  }
+
+  /* Actions */
+  .hero-actions {
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+    margin-bottom: 56px;
+  }
+
+  /* Stats */
+  .hero-stats {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    padding-top: 32px;
+    border-top: 1px solid var(--border);
+  }
+
+  .stat-div {
+    width: 1px;
+    height: 32px;
+    background: var(--border);
+    flex-shrink: 0;
+  }
+
+  .stat-val {
+    display: block;
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: var(--text);
+    font-family: 'Courier New', Consolas, monospace;
+    margin-bottom: 2px;
+  }
+
+  .stat-lbl {
+    font-size: 0.74rem;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-weight: 500;
+  }
+
+  /* Image */
+  .hero-img-wrap {
+    position: relative;
+  }
+
+  .img-frame {
+    position: relative;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    border: 1px solid rgba(16,185,129,0.18);
+    box-shadow:
+      0 24px 64px rgba(0,0,0,0.55),
+      0 0 0 1px rgba(16,185,129,0.08),
+      inset 0 0 0 1px rgba(255,255,255,0.03);
+  }
+
+  .hero-img {
+    width: 100%;
+    height: 580px;
+    object-fit: cover;
+    object-position: center;
+    display: block;
+    transition: transform 0.6s ease;
+  }
+
+  .hero-img:hover { transform: scale(1.02); }
+
+  /* Left gradient fade */
+  .img-fade-left {
+    position: absolute;
+    top: 0; left: 0;
+    width: 28%;
+    height: 100%;
+    background: linear-gradient(to right, var(--bg) 0%, transparent 100%);
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  /* Bottom gradient */
+  .img-overlay-bottom {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 40%;
+    background: linear-gradient(to top, rgba(8,18,30,0.82) 0%, transparent 100%);
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  /* Floating badges on image */
+  .img-badges {
+    position: absolute;
+    bottom: 18px;
+    left: 18px;
+    right: 18px;
+    display: flex;
+    gap: 7px;
+    flex-wrap: wrap;
+    z-index: 2;
+  }
+
+  /* Corner decorations */
+  .corner {
+    position: absolute;
+    width: 22px;
+    height: 22px;
+    z-index: 2;
+  }
+
+  .corner-tl {
+    top: 12px; left: 12px;
+    border-top: 2px solid var(--green);
+    border-left: 2px solid var(--green);
+  }
+
+  .corner-tr {
+    top: 12px; right: 12px;
+    border-top: 2px solid var(--cyan);
+    border-right: 2px solid var(--cyan);
+  }
+
+  .corner-br {
+    bottom: 12px; right: 12px;
+    border-bottom: 2px solid rgba(16,185,129,0.4);
+    border-right: 2px solid rgba(16,185,129,0.4);
+  }
+
+  /* Scroll hint */
+  .scroll-hint {
+    position: absolute;
+    bottom: 28px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    color: var(--text-dim);
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    animation: scrollBounce 2.4s infinite;
+  }
+
+  @keyframes scrollBounce {
+    0%, 100% { opacity: 0.4; transform: translateX(-50%) translateY(0); }
+    50%       { opacity: 0.7; transform: translateX(-50%) translateY(5px); }
+  }
+
+  /* Responsive */
+  @media (max-width: 900px) {
+    .hero-inner {
+      grid-template-columns: 1fr;
+      gap: 48px;
+    }
+
+    .hero-img { height: 340px; }
+    .img-fade-left { display: none; }
+
+    .hero-stats { gap: 16px; }
+    .stat-div { height: 24px; }
+
+    .scroll-hint { display: none; }
+  }
+
+  @media (max-width: 540px) {
+    .hero-title { font-size: 2.2rem; }
+    .hero-stats { flex-wrap: wrap; }
+    .stat-div { display: none; }
+  }
+</style>

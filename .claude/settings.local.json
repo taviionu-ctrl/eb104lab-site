@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install *)",
+      "Bash(npm run *)",
+      "Bash(Get-Content \"C:\\\\Users\\\\razva\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\C--Users-razva-Desktop-sitee\\\\e456954d-40da-4757-b5da-1881310de2a6\\\\tasks\\\\bpf9qy4zk.output\")",
+      "mcp__Claude_Preview__preview_start",
+      "Bash(netstat -ano)",
+      "Bash(taskkill //F //PID 15888)"
+    ]
+  }
+}

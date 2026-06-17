@@ -68,7 +68,7 @@ const services = [
 <section id="servicii" class="services-section">
   <div class="services-bg-glow"></div>
   <div class="container">
-    <div class="services-header">
+    <div class="services-header" data-reveal>
       <p class="section-label">Ce oferim</p>
       <h2 class="section-title">Soluții tehnice complete,<br>de la senzor la dashboard</h2>
       <p class="section-subtitle">
@@ -78,8 +78,8 @@ const services = [
     </div>
 
     <div class="services-grid">
-      {services.map(s => (
-        <article class={`service-card card-${s.color}`}>
+      {services.map((s, i) => (
+        <article class={`service-card card-${s.color}`} data-reveal="scale" data-delay={(i % 3) * 90}>
           <div class="card-top">
             <div class={`card-icon icon-${s.color}`} set:html={s.icon} />
             <span class={`card-label lbl-${s.color}`}>{s.label}</span>

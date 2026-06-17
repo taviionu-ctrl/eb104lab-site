@@ -61,7 +61,7 @@ const steps = [
 
 <section id="solutii" class="solutions-section grid-bg">
   <div class="container">
-    <div class="sol-header">
+    <div class="sol-header" data-reveal>
       <p class="section-label">Arhitectură tehnică</p>
       <h2 class="section-title">Flux integrat de la<br>senzor la dashboard</h2>
       <p class="section-subtitle">
@@ -74,7 +74,7 @@ const steps = [
     <div class="flow-pipeline">
       {steps.map((step, i) => (
         <>
-          <div class={`flow-node node-${step.color}`}>
+          <div class={`flow-node node-${step.color}`} data-reveal="scale" data-delay={i * 110}>
             <div class={`node-num num-${step.color}`}>{step.id}</div>
             <div class={`node-icon icon-${step.color}`} set:html={step.icon} />
             <h4 class="node-title">{step.title}</h4>
@@ -85,10 +85,11 @@ const steps = [
             </ul>
           </div>
           {i < steps.length - 1 && (
-            <div class={`flow-arrow arr-${step.color}`}>
+            <div class={`flow-arrow arr-${step.color}`} style={`--flow-delay:${i * 0.35}s`}>
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
                 <path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
               </svg>
+              <span class="flow-spark"></span>
             </div>
           )}
         </>
@@ -96,7 +97,7 @@ const steps = [
     </div>
 
     <!-- Bottom note -->
-    <div class="sol-footer">
+    <div class="sol-footer" data-reveal>
       <div class="sol-note">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
@@ -207,6 +208,7 @@ const steps = [
 
   /* Arrow between nodes */
   .flow-arrow {
+    position: relative;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -215,9 +217,47 @@ const steps = [
     margin-top: 60px;
   }
 
-  .arr-green { color: var(--green); opacity: 0.5; }
-  .arr-cyan  { color: var(--cyan);  opacity: 0.5; }
-  .arr-amber { color: var(--amber); opacity: 0.5; }
+  .flow-arrow svg {
+    animation: arrowPulse 2.1s ease-in-out infinite;
+    animation-delay: var(--flow-delay, 0s);
+  }
+
+  @keyframes arrowPulse {
+    0%, 100% { opacity: 0.35; transform: translateX(0); }
+    50%      { opacity: 1;    transform: translateX(2px); }
+  }
+
+  /* Spark — punct de date care „curge" pe traseu */
+  .flow-spark {
+    position: absolute;
+    top: 50%;
+    left: 2px;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: currentColor;
+    box-shadow: 0 0 8px currentColor;
+    transform: translateY(-50%);
+    opacity: 0;
+    animation: sparkFlow 2.1s ease-in-out infinite;
+    animation-delay: var(--flow-delay, 0s);
+  }
+
+  @keyframes sparkFlow {
+    0%   { left: 0;    opacity: 0; }
+    20%  { opacity: 1; }
+    80%  { opacity: 1; }
+    100% { left: 100%; opacity: 0; }
+  }
+
+  .arr-green { color: var(--green); }
+  .arr-cyan  { color: var(--cyan); }
+  .arr-amber { color: var(--amber); }
+
+  @media (prefers-reduced-motion: reduce) {
+    .flow-arrow svg { animation: none; opacity: 0.5; }
+    .flow-spark { display: none; }
+  }
 
   /* Footer note */
   .sol-footer {

@@ -1,0 +1,247 @@
+---
+const points = [
+  {
+    icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="2" y="2" width="20" height="8" rx="2"/><rect x="2" y="14" width="20" height="8" rx="2"/>
+      <line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/>
+    </svg>`,
+    title: 'Infrastructură proprie',
+    desc: 'Server fizic, rețea dedicată și platformă de monitorizare rulând local — exact ce instalăm și la client.',
+  },
+  {
+    icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+    </svg>`,
+    title: 'Testat înainte de livrare',
+    desc: 'Fiecare configurație de senzori, automatizare și dashboard este validată pe banc înainte de instalare.',
+  },
+  {
+    icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5M2 12l10 5 10-5"/>
+    </svg>`,
+    title: 'Tehnologii pe care le folosim zilnic',
+    desc: 'Nu recomandăm soluții pe care nu le rulăm noi înșine. Tot stack-ul este verificat în laborator.',
+  },
+];
+---
+
+<section id="despre" class="about-section">
+  <div class="about-glow"></div>
+  <div class="container">
+    <div class="about-grid">
+      <!-- Left: text -->
+      <div class="about-text" data-reveal="left">
+        <p class="section-label">Despre laborator</p>
+        <h2 class="section-title">Construim în<br>laboratorul EB104</h2>
+        <p class="about-lead">
+          EB104 Lab este un spațiu tehnic în care proiectăm, asamblăm și testăm
+          soluții de monitorizare și automatizare. Tot ce propunem clienților —
+          de la senzori și tablouri inteligente, până la dashboard-uri și hosting local —
+          funcționează mai întâi aici, pe infrastructura noastră.
+        </p>
+
+        <div class="about-points">
+          {points.map((p, i) => (
+            <div class="about-point" data-reveal data-delay={i * 90}>
+              <div class="point-icon" set:html={p.icon} />
+              <div>
+                <h4 class="point-title">{p.title}</h4>
+                <p class="point-desc">{p.desc}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <!-- Right: images -->
+      <div class="about-visuals">
+        <div class="about-img-main" data-reveal="right">
+          <img
+            src="/images/rack-infra.webp"
+            alt="Rack cu server local și platformă Home Assistant în laboratorul EB104"
+            loading="lazy"
+          />
+          <div class="about-img-tag">
+            <span class="tbadge green">
+              <span class="pulse-dot" style="width:6px;height:6px;"></span>
+              Server local activ
+            </span>
+          </div>
+        </div>
+
+        <div class="about-img-row">
+          <div class="about-img-small" data-reveal="right" data-delay="120">
+            <img
+              src="/images/server-detaliu.webp"
+              alt="Server rackmount Dell PowerEdge și switch de rețea"
+              loading="lazy"
+            />
+            <span class="about-small-label">Server &amp; rețea</span>
+          </div>
+          <div class="about-img-small" data-reveal="right" data-delay="200">
+            <img
+              src="/images/prototipuri-iot.webp"
+              alt="Banc de lucru cu prototipuri ESP32 și senzori IoT"
+              loading="lazy"
+            />
+            <span class="about-small-label">Banc de test IoT</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .about-section {
+    background: var(--bg);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .about-glow {
+    position: absolute;
+    top: -10%; right: -10%;
+    width: 50%; height: 70%;
+    background: radial-gradient(ellipse, rgba(6,182,212,0.05) 0%, transparent 65%);
+    pointer-events: none;
+  }
+
+  .about-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 64px;
+    align-items: center;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Text */
+  .about-lead {
+    font-size: 1.02rem;
+    color: var(--text-muted);
+    line-height: 1.78;
+    margin-bottom: 32px;
+    max-width: 480px;
+  }
+
+  .about-points {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .about-point {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+  }
+
+  .point-icon {
+    width: 40px;
+    height: 40px;
+    flex-shrink: 0;
+    color: var(--green);
+    background: var(--green-dim);
+    border-radius: var(--radius);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .point-icon svg { width: 20px; height: 20px; }
+
+  .point-title {
+    font-size: 0.96rem;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 3px;
+  }
+
+  .point-desc {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    line-height: 1.6;
+  }
+
+  /* Visuals */
+  .about-visuals {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .about-img-main {
+    position: relative;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    border: 1px solid var(--border-med);
+    box-shadow: var(--shadow-lg);
+  }
+
+  .about-img-main img {
+    width: 100%;
+    height: 340px;
+    object-fit: cover;
+    object-position: center;
+    display: block;
+    transition: transform 0.6s ease;
+  }
+
+  .about-img-main:hover img { transform: scale(1.03); }
+
+  .about-img-tag {
+    position: absolute;
+    top: 14px; left: 14px;
+  }
+
+  .about-img-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  .about-img-small {
+    position: relative;
+    border-radius: var(--radius);
+    overflow: hidden;
+    border: 1px solid var(--border);
+    transition: var(--transition);
+  }
+
+  .about-img-small:hover {
+    border-color: var(--border-med);
+    transform: translateY(-2px);
+  }
+
+  .about-img-small img {
+    width: 100%;
+    height: 150px;
+    object-fit: cover;
+    object-position: center;
+    display: block;
+  }
+
+  .about-small-label {
+    position: absolute;
+    bottom: 8px; left: 8px;
+    padding: 3px 9px;
+    background: rgba(8,18,30,0.82);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    font-family: 'Courier New', monospace;
+  }
+
+  @media (max-width: 900px) {
+    .about-grid { grid-template-columns: 1fr; gap: 44px; }
+    .about-img-main img { height: 260px; }
+  }
+
+  @media (max-width: 480px) {
+    .about-img-row { grid-template-columns: 1fr; }
+    .about-img-small img { height: 180px; }
+  }
+</style>

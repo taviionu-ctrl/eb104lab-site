@@ -56,7 +56,7 @@ const audience = [
 
 <section id="pentru-cine" class="forwho-section">
   <div class="container">
-    <div class="fw-header">
+    <div class="fw-header" data-reveal>
       <p class="section-label">Pentru cine</p>
       <h2 class="section-title">Soluții adaptate<br>nevoilor reale</h2>
       <p class="section-subtitle">
@@ -66,8 +66,8 @@ const audience = [
     </div>
 
     <div class="fw-grid">
-      {audience.map(item => (
-        <div class="fw-card">
+      {audience.map((item, i) => (
+        <div class="fw-card" data-reveal data-delay={(i % 3) * 90}>
           <div class="fw-icon" set:html={item.icon} />
           <h3 class="fw-title">{item.title}</h3>
           <p class="fw-desc">{item.desc}</p>

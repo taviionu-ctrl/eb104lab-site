@@ -46,45 +46,74 @@ const specs = [
 <section id="proiect" class="demo-section">
   <div class="demo-bg-glow"></div>
   <div class="container">
-    <div class="demo-header">
+    <div class="demo-header" data-reveal>
       <p class="section-label">Proiect demonstrativ</p>
       <h2 class="section-title">Tablou electric inteligent<br>cu monitorizare completă</h2>
       <p class="section-subtitle">
         Sistem funcțional implementat în laboratorul EB104, bazat pe analizor trifazat
         Janitza, infrastructură locală și acces remote securizat prin Cloudflare Tunnel.
+        Aceeași abordare scalează de la un tablou complet până la un mini-analizor pe un singur circuit.
       </p>
     </div>
 
     <div class="demo-grid">
       <!-- Left: images -->
       <div class="demo-visuals">
-        <div class="img-primary-wrap">
-          <img
-            src="/images/monitorizare-tablou-electric.png"
-            alt="Dashboard monitorizare tablou electric EB104"
-            class="img-primary"
-            loading="lazy"
-          />
-          <div class="img-primary-overlay">
-            <span class="tbadge green">
-              <span class="pulse-dot" style="width:6px;height:6px;"></span>
-              Live Dashboard
-            </span>
+        <!-- Hardware: soluție completă vs. compactă -->
+        <div class="img-pair img-pair-hw">
+          <div class="img-hw-wrap" data-reveal="left">
+            <img
+              src="/images/tablou-banner.webp"
+              alt="Tablou electric inteligent EB104 cu analizor Janitza și platformă de monitorizare"
+              class="img-hw"
+              loading="lazy"
+            />
+            <div class="img-hw-tag">
+              <span class="tbadge green">
+                <span class="pulse-dot" style="width:6px;height:6px;"></span>
+                Soluție completă
+              </span>
+            </div>
+            <div class="img-sec-label">Tablou inteligent · analizor Janitza</div>
+          </div>
+          <div class="img-hw-wrap" data-reveal="left" data-delay="110">
+            <img
+              src="/images/mini-analizor.webp"
+              alt="Mini-analizor de rețea pentru monitorizare pe un singur circuit"
+              class="img-hw"
+              loading="lazy"
+            />
+            <div class="img-hw-tag">
+              <span class="tbadge">Variantă compactă</span>
+            </div>
+            <div class="img-sec-label">Mini-analizor · monitorizare pe 1 circuit</div>
           </div>
         </div>
 
-        <div class="img-secondary-wrap">
-          <img
-            src="/images/monitorizare%20putere.png"
-            alt="Grafic putere electrică monitorizată în timp real"
-            class="img-secondary"
-            loading="lazy"
-          />
-          <div class="img-sec-label">Putere activă — grafic temporal Grafana</div>
+        <!-- Dashboard-uri -->
+        <div class="img-pair">
+          <div class="img-secondary-wrap" data-reveal="left" data-delay="160">
+            <img
+              src="/images/monitorizare-tablou-electric.png"
+              alt="Dashboard monitorizare tablou electric EB104"
+              class="img-secondary"
+              loading="lazy"
+            />
+            <div class="img-sec-label">Dashboard local — parametri în timp real</div>
+          </div>
+          <div class="img-secondary-wrap" data-reveal="left" data-delay="240">
+            <img
+              src="/images/monitorizare%20putere.png"
+              alt="Grafic putere electrică monitorizată în timp real"
+              class="img-secondary"
+              loading="lazy"
+            />
+            <div class="img-sec-label">Putere activă — grafic temporal</div>
+          </div>
         </div>
 
         <!-- Mini stat cards -->
-        <div class="mini-stats">
+        <div class="mini-stats" data-reveal data-delay="280">
           <div class="mini-stat">
             <span class="ms-val">3×400V</span>
             <span class="ms-lbl">Rețea trifazată</span>
@@ -102,8 +131,8 @@ const specs = [
 
       <!-- Right: specs -->
       <div class="demo-specs">
-        {specs.map(s => (
-          <div class={`spec-block spec-${s.color}`}>
+        {specs.map((s, i) => (
+          <div class={`spec-block spec-${s.color}`} data-reveal="right" data-delay={i * 90}>
             <h4 class={`spec-cat cat-${s.color}`}>{s.cat}</h4>
             <ul class="spec-list">
               {s.items.map(item => (
@@ -163,26 +192,44 @@ const specs = [
     gap: 16px;
   }
 
-  .img-primary-wrap {
+  .img-pair {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  /* Hardware: completă vs compactă */
+  .img-hw-wrap {
     position: relative;
     border-radius: var(--radius-lg);
     overflow: hidden;
     border: 1px solid var(--border-med);
+    box-shadow: var(--shadow);
+    transition: var(--transition);
+  }
+
+  .img-hw-wrap:hover {
+    border-color: rgba(16,185,129,0.35);
+    transform: translateY(-3px);
     box-shadow: var(--shadow-lg);
   }
 
-  .img-primary {
+  .img-hw {
     width: 100%;
-    height: 280px;
+    height: 210px;
     object-fit: cover;
-    object-position: top center;
+    object-position: center;
     display: block;
+    transition: transform 0.6s ease;
   }
 
-  .img-primary-overlay {
+  .img-hw-wrap:hover .img-hw { transform: scale(1.04); }
+
+  .img-hw-tag {
     position: absolute;
     top: 12px;
-    right: 12px;
+    left: 12px;
+    z-index: 2;
   }
 
   .img-secondary-wrap {
@@ -191,15 +238,21 @@ const specs = [
     overflow: hidden;
     border: 1px solid var(--border);
     background: var(--card);
+    transition: var(--transition);
+  }
+
+  .img-secondary-wrap:hover {
+    border-color: var(--border-med);
+    transform: translateY(-2px);
   }
 
   .img-secondary {
     width: 100%;
-    height: 180px;
+    height: 140px;
     object-fit: cover;
     object-position: center;
     display: block;
-    opacity: 0.9;
+    opacity: 0.92;
   }
 
   .img-sec-label {

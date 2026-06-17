@@ -3,3 +3,6 @@ dist/
 .astro/
 .env
 .env.local
+
+# Local Claude settings
+.claude/settings.local.json

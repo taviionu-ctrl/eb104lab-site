@@ -36,7 +36,7 @@ const categories = [
 <section id="tehnologii" class="tech-section grid-bg">
   <div class="tech-glow"></div>
   <div class="container">
-    <div class="tech-header">
+    <div class="tech-header" data-reveal>
       <p class="section-label">Stack tehnic</p>
       <h2 class="section-title">Tehnologii deschise,<br>fără vendor lock-in</h2>
       <p class="section-subtitle">
@@ -46,8 +46,8 @@ const categories = [
     </div>
 
     <div class="tech-grid">
-      {categories.map(cat => (
-        <div class={`tech-cat cat-${cat.color}`}>
+      {categories.map((cat, i) => (
+        <div class={`tech-cat cat-${cat.color}`} data-reveal data-delay={i * 110}>
           <div class={`cat-header cat-hdr-${cat.color}`}>
             <div class={`cat-indicator ind-${cat.color}`}></div>
             <h3 class="cat-name">{cat.name}</h3>
@@ -68,7 +68,7 @@ const categories = [
     </div>
 
     <!-- Badge cloud -->
-    <div class="badge-cloud">
+    <div class="badge-cloud" data-reveal>
       {['MQTT', 'Modbus RTU', 'Modbus TCP', 'RS485', 'ESP32', 'ESPHome',
         'Grafana', 'InfluxDB', 'Home Assistant', 'Node-RED', 'Mosquitto',
         'Linux', 'Proxmox', 'Nginx', 'Cloudflare Tunnel', 'Let\'s Encrypt',

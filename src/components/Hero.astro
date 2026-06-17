@@ -6,25 +6,25 @@
   <div class="container hero-inner">
     <!-- Left: text -->
     <div class="hero-text">
-      <p class="hero-eyebrow">
+      <p class="hero-eyebrow" data-reveal data-delay="0">
         <span class="pulse-dot"></span>
         Sistem activ · EB104 Lab
       </p>
 
-      <h1 class="hero-title">
+      <h1 class="hero-title" data-reveal data-delay="80">
         Monitorizare<br>
         Energetică și<br>
         <span class="accent-green">Automatizări</span><br>
         Tehnice
       </h1>
 
-      <p class="hero-sub">
+      <p class="hero-sub" data-reveal data-delay="180">
         Soluții complete pentru monitorizare consum electric, analiză calitate energie,
         tablouri inteligente, integrare senzori IoT și dashboard-uri locale —
         fără dependențe cloud externe obligatorii.
       </p>
 
-      <div class="hero-actions">
+      <div class="hero-actions" data-reveal data-delay="280">
         <a href="#contact" class="btn btn-primary">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
@@ -39,7 +39,7 @@
         </a>
       </div>
 
-      <div class="hero-stats">
+      <div class="hero-stats" data-reveal data-delay="380">
         <div class="stat">
           <span class="stat-val">Modbus/RS485</span>
           <span class="stat-lbl">Protocoale industriale</span>
@@ -58,13 +58,14 @@
     </div>
 
     <!-- Right: image -->
-    <div class="hero-img-wrap">
-      <div class="img-frame">
+    <div class="hero-img-wrap" data-reveal="scale" data-delay="200">
+      <div class="img-frame" data-parallax="0.05">
         <img
-          src="/images/tablou-electric.jpg"
-          alt="Tablou electric inteligent cu analizor Janitza — EB104 Lab"
+          src="/images/hero-tablou.webp"
+          alt="Tablou electric inteligent cu analizor Janitza UMG 104 și platformă IIoT Smart Monitoring — EB104 Lab"
           class="hero-img"
           loading="eager"
+          fetchpriority="high"
         />
         <div class="img-fade-left"></div>
         <div class="img-overlay-bottom"></div>

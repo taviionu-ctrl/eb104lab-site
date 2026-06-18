@@ -2,8 +2,8 @@
 const steps = [
   {
     id: '01',
-    title: 'Surse de date',
-    items: ['Senzori ESP32/ESPHome', 'Analizor Janitza (RS485)', 'PZEM-004T', 'Senzori SHT/DHT'],
+    title: 'Măsurare',
+    items: ['Analizor de rețea trifazat', 'Senzori de proces', 'Contoare de energie', 'Citire pe fiecare fază'],
     color: 'cyan',
     icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
       <rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-4 0v2"/><line x1="12" y1="12" x2="12" y2="16"/><circle cx="12" cy="12" r="1" fill="currentColor"/>
@@ -11,8 +11,8 @@ const steps = [
   },
   {
     id: '02',
-    title: 'Transport date',
-    items: ['Broker MQTT local', 'Modbus TCP/IP', 'Ethernet / WiFi', 'RS485 → USB/ETH'],
+    title: 'Colectare',
+    items: ['Comunicație locală securizată', 'Date centralizate într-un loc', 'Fără internet obligatoriu', 'Actualizare continuă'],
     color: 'green',
     icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
       <path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/>
@@ -21,8 +21,8 @@ const steps = [
   },
   {
     id: '03',
-    title: 'Procesare & control',
-    items: ['Home Assistant', 'Node-RED (opțional)', 'Automatizări logice', 'Alerte în timp real'],
+    title: 'Procesare & automatizare',
+    items: ['Reguli și automatizări', 'Praguri și condiții logice', 'Reacții în timp real', 'Acțiuni programate'],
     color: 'green',
     icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
       <circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/>
@@ -30,8 +30,8 @@ const steps = [
   },
   {
     id: '04',
-    title: 'Stocare date',
-    items: ['InfluxDB (time-series)', 'Retenție configurabilă', 'Backup automatizat', 'Export CSV/JSON'],
+    title: 'Istoric',
+    items: ['Stocare pe termen lung', 'Retenție configurabilă', 'Backup automat', 'Export pentru rapoarte'],
     color: 'amber',
     icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
       <ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/>
@@ -41,7 +41,7 @@ const steps = [
   {
     id: '05',
     title: 'Vizualizare',
-    items: ['Dashboard Grafana', 'Grafice temporale', 'Heatmap, histograme', 'Mobile-friendly'],
+    items: ['Dashboard în timp real', 'Grafice și evoluții', 'Acces din orice browser', 'Optimizat pentru mobil'],
     color: 'cyan',
     icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
       <rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/>
@@ -50,7 +50,7 @@ const steps = [
   {
     id: '06',
     title: 'Acces & alertare',
-    items: ['Cloudflare Tunnel', 'Nginx reverse proxy', 'Notificări email/TG', 'Acces securizat HTTPS'],
+    items: ['Acces remote securizat', 'Conexiune criptată', 'Notificări la praguri', 'Rapoarte periodice'],
     color: 'amber',
     icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
       <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
@@ -62,11 +62,11 @@ const steps = [
 <section id="solutii" class="solutions-section grid-bg">
   <div class="container">
     <div class="sol-header" data-reveal>
-      <p class="section-label">Arhitectură tehnică</p>
-      <h2 class="section-title">Flux integrat de la<br>senzor la dashboard</h2>
+      <p class="section-label">Cum funcționează</p>
+      <h2 class="section-title">Un flux integrat,<br>de la măsurare la decizie</h2>
       <p class="section-subtitle">
-        Un sistem complet, rulând local pe infrastructura dumneavoastră. Datele nu
-        părăsesc rețeaua internă decât prin tunelul securizat, dacă doriți acces remote.
+        Un sistem complet, care rulează local, pe infrastructura ta. Datele rămân în
+        rețeaua internă și pot fi accesate de la distanță doar printr-o conexiune securizată.
       </p>
     </div>
 
@@ -102,8 +102,8 @@ const steps = [
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
         </svg>
-        Toată infrastructura rulează local: Raspberry Pi, Mini PC, server propriu sau mașini virtuale Proxmox.
-        Cloudflare Tunnel asigură acces HTTPS securizat fără port forwarding sau IP public fix.
+        Întregul sistem rulează local, pe infrastructura ta. Accesul de la distanță se face
+        printr-o conexiune criptată, sigură — fără a expune rețeaua direct la internet.
       </div>
     </div>
   </div>

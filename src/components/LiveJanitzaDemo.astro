@@ -1,0 +1,553 @@
+﻿<section id="live-janitza" class="janitza-live-section grid-bg">
+  <div class="container">
+    <div class="janitza-head" data-reveal>
+      <p class="section-label">Demo live</p>
+      <h2 class="section-title">Vezi-ți consumul<br>în timp real</h2>
+      <p class="section-subtitle">
+        Acesta este un dashboard real, alimentat chiar acum cu date din instalație:
+        tensiuni, curenți și putere activă pe fiecare fază. Exact tipul de vizibilitate
+        pe care îl primești asupra propriului consum.
+      </p>
+    </div>
+
+    <div class="janitza-dashboard" data-reveal>
+      <div class="live-topline">
+        <div>
+          <span class="live-kicker">Monitorizare live</span>
+          <h3>Parametri electrici în timp real</h3>
+        </div>
+        <div class="live-state" id="janitza-state">
+          <span class="pulse-dot"></span>
+          <span id="janitza-status">Se incarca...</span>
+        </div>
+      </div>
+
+      <div class="metric-groups">
+        <div class="metric-group">
+          <div class="group-title">Tensiuni faza-nul</div>
+          <div class="phase-grid">
+            <div class="metric-card voltage"><span>L1-N</span><strong id="voltage-l1">--</strong><small>V</small></div>
+            <div class="metric-card voltage"><span>L2-N</span><strong id="voltage-l2">--</strong><small>V</small></div>
+            <div class="metric-card voltage"><span>L3-N</span><strong id="voltage-l3">--</strong><small>V</small></div>
+          </div>
+        </div>
+
+        <div class="metric-group">
+          <div class="group-title">Curenti faze</div>
+          <div class="phase-grid">
+            <div class="metric-card current"><span>L1</span><strong id="current-l1">--</strong><small>A</small></div>
+            <div class="metric-card current"><span>L2</span><strong id="current-l2">--</strong><small>A</small></div>
+            <div class="metric-card current"><span>L3</span><strong id="current-l3">--</strong><small>A</small></div>
+          </div>
+        </div>
+
+        <div class="metric-group power-box">
+          <div class="group-title">Putere activa</div>
+          <div class="power-total"><strong id="power-total">--</strong><span>W total</span></div>
+          <div class="phase-power">
+            <span>L1 <b id="power-l1">--</b> W</span>
+            <span>L2 <b id="power-l2">--</b> W</span>
+            <span>L3 <b id="power-l3">--</b> W</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="chart-wrap">
+        <div class="chart-toolbar">
+          <div>
+            <span class="live-kicker">Istoric 12h</span>
+            <h4 id="chart-title">Tensiuni pe faze</h4>
+          </div>
+          <div class="chart-tabs" role="tablist" aria-label="Alege grafic">
+            <button type="button" class="active" data-chart="voltage">U</button>
+            <button type="button" data-chart="current">I</button>
+            <button type="button" data-chart="power">P</button>
+          </div>
+        </div>
+
+        <svg id="janitza-chart" class="janitza-chart" viewBox="0 0 920 330" role="img" aria-label="Grafic parametri electrici în timp real">
+          <defs>
+            <linearGradient id="chartShade" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="#10b981" stop-opacity="0.18" />
+              <stop offset="1" stop-color="#10b981" stop-opacity="0" />
+            </linearGradient>
+          </defs>
+          <g class="grid-lines"></g>
+          <g class="axis-labels"></g>
+          <g class="time-labels"></g>
+          <path id="janitza-area" class="chart-area" d=""></path>
+          <polyline id="line-a" class="chart-line line-a" points=""></polyline>
+          <polyline id="line-b" class="chart-line line-b" points=""></polyline>
+          <polyline id="line-c" class="chart-line line-c" points=""></polyline>
+        </svg>
+
+        <div class="chart-legend" id="chart-legend"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script is:inline>
+(function () {
+  var dataCache = null;
+  var activeChart = 'voltage';
+  var chartConfig = {
+    voltage: { title: 'Tensiuni pe faze', unit: 'V', keys: ['voltage_l1', 'voltage_l2', 'voltage_l3'], labels: ['L1-N', 'L2-N', 'L3-N'] },
+    current: { title: 'Curenti pe faze', unit: 'A', keys: ['current_l1', 'current_l2', 'current_l3'], labels: ['L1', 'L2', 'L3'] },
+    power: { title: 'Putere activa', unit: 'W', keys: ['power_l1', 'power_l2', 'power_l3'], labels: ['P L1', 'P L2', 'P L3'] }
+  };
+
+  function $(id) { return document.getElementById(id); }
+
+  function fmt(value, digits) {
+    if (value === null || value === undefined || Number.isNaN(Number(value))) return '--';
+    return Number(value).toLocaleString('ro-RO', { maximumFractionDigits: digits });
+  }
+
+  function setText(id, value, digits) {
+    var el = $(id);
+    if (el) el.textContent = fmt(value, digits);
+  }
+
+  function updateLive(data) {
+    var live = data.live || {};
+    var u = live.voltage || {};
+    var i = live.current || {};
+    var p = live.power || {};
+
+    setText('voltage-l1', u.l1, 1);
+    setText('voltage-l2', u.l2, 1);
+    setText('voltage-l3', u.l3, 1);
+    setText('current-l1', i.l1, 2);
+    setText('current-l2', i.l2, 2);
+    setText('current-l3', i.l3, 2);
+    setText('power-total', p.total, 0);
+    setText('power-l1', p.l1, 0);
+    setText('power-l2', p.l2, 0);
+    setText('power-l3', p.l3, 0);
+
+    var status = $('janitza-status');
+    if (status) {
+      var label = data.updatedAt ? new Date(data.updatedAt).toLocaleTimeString('ro-RO', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) : 'live';
+      status.textContent = 'Actualizat ' + label;
+    }
+  }
+
+  function valueRange(points, keys) {
+    var vals = [];
+    points.forEach(function (p) {
+      keys.forEach(function (k) {
+        var v = Number(p[k]);
+        if (Number.isFinite(v)) vals.push(v);
+      });
+    });
+    if (!vals.length) return { min: 0, max: 1 };
+    var min = Math.min.apply(null, vals);
+    var max = Math.max.apply(null, vals);
+    if (min === max) { min -= 1; max += 1; }
+    var pad = (max - min) * 0.12;
+    return { min: min - pad, max: max + pad };
+  }
+
+  var PLOT = { left: 54, right: 22, top: 28, bottom: 44, vw: 920, vh: 330 };
+
+  function plotXY(index, total, value, min, max) {
+    var width = PLOT.vw - PLOT.left - PLOT.right;
+    var height = PLOT.vh - PLOT.top - PLOT.bottom;
+    var x = PLOT.left + (total > 1 ? index / (total - 1) : 0) * width;
+    var y = PLOT.top + (1 - ((value - min) / (max - min))) * height;
+    return [x, y];
+  }
+
+  // Aliniere pe index GLOBAL (toate seriile impart aceeasi axa de timp)
+  function makePoints(points, key, min, max) {
+    if (points.length < 2) return '';
+    var coords = [];
+    points.forEach(function (p, index) {
+      var v = Number(p[key]);
+      if (!Number.isFinite(v)) return;
+      var xy = plotXY(index, points.length, v, min, max);
+      coords.push(xy[0].toFixed(1) + ',' + xy[1].toFixed(1));
+    });
+    return coords.length >= 2 ? coords.join(' ') : '';
+  }
+
+  // Zona umpluta sub prima serie
+  function makeArea(points, key, min, max) {
+    if (points.length < 2) return '';
+    var baseline = PLOT.vh - PLOT.bottom;
+    var pts = [];
+    points.forEach(function (p, index) {
+      var v = Number(p[key]);
+      if (!Number.isFinite(v)) return;
+      pts.push(plotXY(index, points.length, v, min, max));
+    });
+    if (pts.length < 2) return '';
+    var d = 'M' + pts[0][0].toFixed(1) + ',' + baseline.toFixed(1);
+    pts.forEach(function (xy) { d += ' L' + xy[0].toFixed(1) + ',' + xy[1].toFixed(1); });
+    d += ' L' + pts[pts.length - 1][0].toFixed(1) + ',' + baseline.toFixed(1) + ' Z';
+    return d;
+  }
+
+  function drawGrid(min, max, unit) {
+    var grid = document.querySelector('#janitza-chart .grid-lines');
+    var labels = document.querySelector('#janitza-chart .axis-labels');
+    if (!grid || !labels) return;
+    var left = 54, right = 22, top = 28, bottom = 44;
+    var width = 920 - left - right;
+    var height = 330 - top - bottom;
+    var g = '';
+    var l = '';
+    for (var i = 0; i <= 4; i++) {
+      var y = top + (i / 4) * height;
+      var val = max - (i / 4) * (max - min);
+      g += '<line x1="' + left + '" y1="' + y + '" x2="' + (left + width) + '" y2="' + y + '" />';
+      l += '<text x="10" y="' + (y + 4) + '">' + fmt(val, unit === 'A' ? 1 : 0) + '</text>';
+    }
+    for (var j = 0; j <= 6; j++) {
+      var x = left + (j / 6) * width;
+      g += '<line x1="' + x + '" y1="' + top + '" x2="' + x + '" y2="' + (top + height) + '" />';
+    }
+    grid.innerHTML = g;
+    labels.innerHTML = l + '<text x="10" y="24">' + unit + '</text>';
+  }
+
+  function drawTimeAxis(points) {
+    var holder = document.querySelector('#janitza-chart .time-labels');
+    if (!holder) return;
+    if (!points.length) { holder.innerHTML = ''; return; }
+    var width = PLOT.vw - PLOT.left - PLOT.right;
+    var y = PLOT.vh - PLOT.bottom + 22;
+    var steps = 4;
+    var out = '';
+    for (var i = 0; i <= steps; i++) {
+      var idx = Math.round((i / steps) * (points.length - 1));
+      var t = points[idx] && points[idx].time;
+      if (!t) continue;
+      var label = new Date(t).toLocaleTimeString('ro-RO', { hour: '2-digit', minute: '2-digit' });
+      var x = PLOT.left + (i / steps) * width;
+      var anchor = i === 0 ? 'start' : (i === steps ? 'end' : 'middle');
+      out += '<text x="' + x.toFixed(1) + '" y="' + y + '" text-anchor="' + anchor + '">' + label + '</text>';
+    }
+    holder.innerHTML = out;
+  }
+
+  function drawChart() {
+    if (!dataCache) return;
+    var points = dataCache.history || [];
+    var cfg = chartConfig[activeChart];
+    var range = valueRange(points, cfg.keys);
+    drawGrid(range.min, range.max, cfg.unit);
+
+    $('chart-title').textContent = cfg.title;
+    $('line-a').setAttribute('points', makePoints(points, cfg.keys[0], range.min, range.max));
+    $('line-b').setAttribute('points', makePoints(points, cfg.keys[1], range.min, range.max));
+    $('line-c').setAttribute('points', makePoints(points, cfg.keys[2], range.min, range.max));
+    $('janitza-area').setAttribute('d', makeArea(points, cfg.keys[0], range.min, range.max));
+    drawTimeAxis(points);
+
+    var legend = $('chart-legend');
+    if (legend) {
+      legend.innerHTML = cfg.labels.map(function (label, idx) {
+        return '<span class="legend-item legend-' + idx + '"><i></i>' + label + '</span>';
+      }).join('');
+    }
+  }
+
+  function setStatus(text, error) {
+    var status = $('janitza-status');
+    var state = $('janitza-state');
+    if (status) status.textContent = text;
+    if (state) state.classList.toggle('error', !!error);
+  }
+
+  async function loadData() {
+    try {
+      var response = await fetch('/api/janitza/summary?range=12h', { cache: 'no-store' });
+      if (!response.ok) throw new Error('HTTP ' + response.status);
+      dataCache = await response.json();
+      updateLive(dataCache);
+      drawChart();
+    } catch (err) {
+      setStatus('API indisponibil', true);
+      console.warn('Live API error', err);
+    }
+  }
+
+  document.querySelectorAll('.chart-tabs button').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      document.querySelectorAll('.chart-tabs button').forEach(function (b) { b.classList.remove('active'); });
+      btn.classList.add('active');
+      activeChart = btn.getAttribute('data-chart') || 'voltage';
+      drawChart();
+    });
+  });
+
+  loadData();
+  window.setInterval(loadData, 5000);
+})();
+</script>
+
+<style>
+  .janitza-live-section {
+    background: var(--bg);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .janitza-head {
+    max-width: 760px;
+    margin-bottom: 44px;
+  }
+
+  .janitza-dashboard {
+    border: 1px solid var(--border-med);
+    border-radius: var(--radius-lg);
+    background: linear-gradient(180deg, rgba(13,30,48,0.96), rgba(8,18,30,0.98));
+    box-shadow: var(--shadow-lg);
+    padding: 26px;
+  }
+
+  .live-topline {
+    display: flex;
+    justify-content: space-between;
+    gap: 18px;
+    align-items: flex-start;
+    margin-bottom: 24px;
+  }
+
+  .live-kicker {
+    display: block;
+    color: var(--cyan);
+    font-size: 0.72rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    margin-bottom: 5px;
+  }
+
+  .live-topline h3,
+  .chart-toolbar h4 {
+    font-size: 1.35rem;
+    line-height: 1.2;
+    color: var(--text);
+  }
+
+  .live-state {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--green-light);
+    font-family: 'Courier New', Consolas, monospace;
+    font-size: 0.82rem;
+    white-space: nowrap;
+  }
+
+  .live-state.error { color: var(--red); }
+  .live-state.error .pulse-dot { background: var(--red); box-shadow: 0 0 8px var(--red); }
+
+  .metric-groups {
+    display: grid;
+    grid-template-columns: 1.05fr 1.05fr 0.9fr;
+    gap: 16px;
+    margin-bottom: 18px;
+  }
+
+  .metric-group {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: rgba(8,18,30,0.52);
+    padding: 16px;
+  }
+
+  .group-title {
+    font-size: 0.74rem;
+    color: var(--text-muted);
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.09em;
+    margin-bottom: 12px;
+  }
+
+  .phase-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .metric-card {
+    min-height: 92px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+    background: var(--card);
+    padding: 13px 12px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  .metric-card span {
+    color: var(--text-muted);
+    font-size: 0.75rem;
+    font-weight: 700;
+  }
+
+  .metric-card strong {
+    font-size: clamp(1.22rem, 2.2vw, 1.72rem);
+    line-height: 1;
+    color: var(--text);
+    font-family: 'Courier New', Consolas, monospace;
+  }
+
+  .metric-card small {
+    color: var(--text-dim);
+    font-size: 0.72rem;
+    font-weight: 700;
+  }
+
+  .metric-card.voltage { border-color: rgba(6,182,212,0.22); }
+  .metric-card.current { border-color: rgba(16,185,129,0.22); }
+
+  .power-box {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .power-total {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    margin: 6px 0 14px;
+  }
+
+  .power-total strong {
+    font-family: 'Courier New', Consolas, monospace;
+    font-size: clamp(2rem, 4vw, 3.2rem);
+    color: var(--green-light);
+    line-height: 1;
+  }
+
+  .power-total span { color: var(--text-muted); font-size: 0.85rem; }
+
+  .phase-power {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+    margin-top: auto;
+  }
+
+  .phase-power span {
+    border-radius: var(--radius-sm);
+    background: rgba(16,185,129,0.08);
+    color: var(--text-muted);
+    padding: 8px;
+    font-size: 0.76rem;
+    text-align: center;
+  }
+
+  .phase-power b { color: var(--text); font-family: 'Courier New', Consolas, monospace; }
+
+  .chart-wrap {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: rgba(6,12,20,0.42);
+    padding: 18px 18px 14px;
+  }
+
+  .chart-toolbar {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    align-items: center;
+    margin-bottom: 14px;
+  }
+
+  .chart-tabs {
+    display: inline-flex;
+    gap: 6px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 4px;
+    background: rgba(8,18,30,0.8);
+  }
+
+  .chart-tabs button {
+    width: 38px;
+    height: 32px;
+    border: 0;
+    border-radius: 3px;
+    background: transparent;
+    color: var(--text-muted);
+    font-weight: 800;
+    cursor: pointer;
+    transition: var(--transition);
+  }
+
+  .chart-tabs button.active,
+  .chart-tabs button:hover {
+    background: var(--green-dim);
+    color: var(--green-light);
+  }
+
+  .janitza-chart {
+    width: 100%;
+    aspect-ratio: 920 / 330;
+    display: block;
+  }
+
+  .grid-lines line {
+    stroke: rgba(122,155,184,0.14);
+    stroke-width: 1;
+  }
+
+  .axis-labels text {
+    fill: var(--text-dim);
+    font-size: 12px;
+    font-family: 'Courier New', Consolas, monospace;
+  }
+
+  .time-labels text {
+    fill: var(--text-dim);
+    font-size: 11px;
+    font-family: 'Courier New', Consolas, monospace;
+  }
+
+  .chart-line {
+    fill: none;
+    stroke-width: 2.3;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    filter: drop-shadow(0 0 8px rgba(16,185,129,0.2));
+  }
+
+  .line-a { stroke: var(--green-light); }
+  .line-b { stroke: var(--cyan); }
+  .line-c { stroke: var(--amber); }
+  .chart-area { fill: url(#chartShade); }
+
+  .chart-legend {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-left: 54px;
+    color: var(--text-muted);
+    font-size: 0.8rem;
+  }
+
+  .legend-item { display: inline-flex; align-items: center; gap: 7px; }
+  .legend-item i { width: 18px; height: 3px; border-radius: 2px; display: inline-block; }
+  .legend-0 i { background: var(--green-light); }
+  .legend-1 i { background: var(--cyan); }
+  .legend-2 i { background: var(--amber); }
+
+  @media (max-width: 980px) {
+    .metric-groups { grid-template-columns: 1fr; }
+  }
+
+  @media (max-width: 620px) {
+    .janitza-dashboard { padding: 18px; }
+    .live-topline, .chart-toolbar { flex-direction: column; align-items: flex-start; }
+    .phase-grid, .phase-power { grid-template-columns: 1fr; }
+    .chart-legend { margin-left: 0; }
+  }
+</style>

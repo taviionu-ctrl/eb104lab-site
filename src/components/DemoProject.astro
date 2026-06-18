@@ -1,42 +1,42 @@
 ---
 const specs = [
   {
-    cat: 'Analizor de rețea',
+    cat: 'Măsurare',
     items: [
-      'Janitza UMG 801-PROe — trifazat',
-      'Măsurare U, I, P, Q, S, PF, THD, kWh',
-      'Comunicație RS485 / Modbus RTU',
-      'Precizie clasa 0.5S',
+      'Analizor de rețea profesional, trifazat',
+      'Tensiune, curent, putere, factor de putere, energie',
+      'Citire pe fiecare fază în parte',
+      'Precizie de clasă industrială',
     ],
     color: 'green',
   },
   {
-    cat: 'Gateway & comunicații',
+    cat: 'Colectare & procesare',
     items: [
-      'Convertor RS485 → Modbus TCP/IP',
-      'Mini PC local (Linux Debian/Ubuntu)',
-      'Home Assistant ca middleware',
-      'Broker MQTT Mosquitto',
+      'Date colectate local, într-un singur loc',
+      'Unitate de procesare dedicată',
+      'Integrare unitară a tuturor senzorilor',
+      'Comunicație securizată în rețea',
     ],
     color: 'cyan',
   },
   {
     cat: 'Stocare & vizualizare',
     items: [
-      'InfluxDB — stocare date time-series',
-      'Grafana — dashboard configurabil',
-      'Alerte la depășire prag (email / Telegram)',
-      'Retenție date configurabilă (zile/luni)',
+      'Istoric pe termen lung al consumului',
+      'Dashboard configurabil, în timp real',
+      'Alerte la depășirea pragurilor',
+      'Retenție configurabilă (zile / luni)',
     ],
     color: 'amber',
   },
   {
     cat: 'Acces remote securizat',
     items: [
-      'Cloudflare Tunnel → domeniu propriu',
-      'Nginx reverse proxy intern',
-      'Autentificare cu user/parolă + 2FA',
-      'HTTPS — certificat automat Let\'s Encrypt',
+      'Acces de la distanță pe domeniu propriu',
+      'Conexiune criptată, fără IP public',
+      'Autentificare cu parolă + 2FA',
+      'Trafic securizat HTTPS',
     ],
     color: 'green',
   },
@@ -50,9 +50,9 @@ const specs = [
       <p class="section-label">Proiect demonstrativ</p>
       <h2 class="section-title">Tablou electric inteligent<br>cu monitorizare completă</h2>
       <p class="section-subtitle">
-        Sistem funcțional implementat în laboratorul EB104, bazat pe analizor trifazat
-        Janitza, infrastructură locală și acces remote securizat prin Cloudflare Tunnel.
-        Aceeași abordare scalează de la un tablou complet până la un mini-analizor pe un singur circuit.
+        Sistem funcțional implementat de EB104: analizor de rețea profesional,
+        monitorizare locală și acces remote securizat. Aceeași abordare scalează de la
+        un tablou complet până la un mini-analizor pe un singur circuit.
       </p>
     </div>
 
@@ -64,7 +64,7 @@ const specs = [
           <div class="img-hw-wrap" data-reveal="left">
             <img
               src="/images/tablou-banner.webp"
-              alt="Tablou electric inteligent EB104 cu analizor Janitza și platformă de monitorizare"
+              alt="Tablou electric inteligent EB104 cu analizor de rețea și platformă de monitorizare"
               class="img-hw"
               loading="lazy"
             />
@@ -74,7 +74,7 @@ const specs = [
                 Soluție completă
               </span>
             </div>
-            <div class="img-sec-label">Tablou inteligent · analizor Janitza</div>
+            <div class="img-sec-label">Tablou inteligent · analizor de rețea</div>
           </div>
           <div class="img-hw-wrap" data-reveal="left" data-delay="110">
             <img

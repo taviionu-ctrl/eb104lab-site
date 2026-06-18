@@ -2,7 +2,7 @@
   <div class="container">
     <div class="janitza-head" data-reveal>
       <p class="section-label">Demo live</p>
-      <h2 class="section-title">Vezi-ți consumul<br>în timp real</h2>
+      <h2 class="section-title">Vezi consumul<br>în timp real</h2>
       <p class="section-subtitle">
         Acesta este un dashboard real, alimentat chiar acum cu date din instalație:
         tensiuni, curenți și putere activă pe fiecare fază. Exact tipul de vizibilitate
@@ -196,20 +196,27 @@
     var left = 54, right = 22, top = 28, bottom = 44;
     var width = 920 - left - right;
     var height = 330 - top - bottom;
+    // Stiluri inline — elementele injectate din JS nu primesc CSS-ul scoped
+    var GRID = 'stroke="rgba(122,155,184,0.13)" stroke-width="1"';
+    var AXIS = 'stroke="rgba(180,202,224,0.55)" stroke-width="1.5"';
+    var TXT = 'fill="#8fb0cc" font-size="12" font-family="Consolas, monospace"';
     var g = '';
     var l = '';
     for (var i = 0; i <= 4; i++) {
       var y = top + (i / 4) * height;
       var val = max - (i / 4) * (max - min);
-      g += '<line x1="' + left + '" y1="' + y + '" x2="' + (left + width) + '" y2="' + y + '" />';
-      l += '<text x="10" y="' + (y + 4) + '">' + fmt(val, unit === 'A' ? 1 : 0) + '</text>';
+      g += '<line ' + GRID + ' x1="' + left + '" y1="' + y + '" x2="' + (left + width) + '" y2="' + y + '" />';
+      l += '<text ' + TXT + ' x="' + (left - 9) + '" y="' + (y + 4) + '" text-anchor="end">' + fmt(val, unit === 'A' ? 1 : 0) + '</text>';
     }
     for (var j = 0; j <= 6; j++) {
       var x = left + (j / 6) * width;
-      g += '<line x1="' + x + '" y1="' + top + '" x2="' + x + '" y2="' + (top + height) + '" />';
+      g += '<line ' + GRID + ' x1="' + x + '" y1="' + top + '" x2="' + x + '" y2="' + (top + height) + '" />';
     }
+    // Axe principale (scara) — verticala stanga + baza orizontala
+    g += '<line ' + AXIS + ' x1="' + left + '" y1="' + top + '" x2="' + left + '" y2="' + (top + height) + '" />';
+    g += '<line ' + AXIS + ' x1="' + left + '" y1="' + (top + height) + '" x2="' + (left + width) + '" y2="' + (top + height) + '" />';
     grid.innerHTML = g;
-    labels.innerHTML = l + '<text x="10" y="24">' + unit + '</text>';
+    labels.innerHTML = l + '<text ' + TXT + ' x="14" y="22" text-anchor="middle">' + unit + '</text>';
   }
 
   function drawTimeAxis(points) {
@@ -227,7 +234,7 @@
       var label = new Date(t).toLocaleTimeString('ro-RO', { hour: '2-digit', minute: '2-digit' });
       var x = PLOT.left + (i / steps) * width;
       var anchor = i === 0 ? 'start' : (i === steps ? 'end' : 'middle');
-      out += '<text x="' + x.toFixed(1) + '" y="' + y + '" text-anchor="' + anchor + '">' + label + '</text>';
+      out += '<text fill="#8fb0cc" font-size="11" font-family="Consolas, monospace" x="' + x.toFixed(1) + '" y="' + y + '" text-anchor="' + anchor + '">' + label + '</text>';
     }
     holder.innerHTML = out;
   }
@@ -248,8 +255,12 @@
 
     var legend = $('chart-legend');
     if (legend) {
+      // culorile trebuie sa corespunda cu line-a / line-b / line-c
+      var SERIES_COLORS = ['#34d399', '#06b6d4', '#f59e0b'];
       legend.innerHTML = cfg.labels.map(function (label, idx) {
-        return '<span class="legend-item legend-' + idx + '"><i></i>' + label + '</span>';
+        return '<span class="legend-item" style="display:inline-flex;align-items:center;gap:7px">' +
+          '<i style="display:inline-block;width:18px;height:4px;border-radius:2px;background:' + SERIES_COLORS[idx] + '"></i>' +
+          '<span>' + label + '</span></span>';
       }).join('');
     }
   }
@@ -498,6 +509,11 @@
   .grid-lines line {
     stroke: rgba(122,155,184,0.14);
     stroke-width: 1;
+  }
+
+  .grid-lines .axis-line {
+    stroke: rgba(122,155,184,0.45);
+    stroke-width: 1.4;
   }
 
   .axis-labels text {

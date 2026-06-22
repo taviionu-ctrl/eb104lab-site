@@ -40,7 +40,7 @@ BOUNDS = {
 }
 
 
-def influx_query(flux: str) -> list[dict]:
+def influx_query(flux: str, timeout: int = 15) -> list[dict]:
     if not INFLUX_TOKEN:
         raise RuntimeError("INFLUX_TOKEN is not configured")
     body = json.dumps({"query": flux, "type": "flux"}).encode("utf-8")
@@ -54,7 +54,7 @@ def influx_query(flux: str) -> list[dict]:
         },
         method="POST",
     )
-    with urllib.request.urlopen(req, timeout=12) as response:
+    with urllib.request.urlopen(req, timeout=timeout) as response:
         text = response.read().decode("utf-8", errors="replace")
     rows = []
     for row in csv.DictReader(io.StringIO(text)):
@@ -91,7 +91,7 @@ def sanitize(key: str, value) -> float | None:
 
 
 def normalize_range(value: str) -> str:
-    allowed = {"1h", "3h", "6h", "12h", "24h"}
+    allowed = {"1h", "3h", "6h", "12h", "24h", "7d"}
     return value if value in allowed else "12h"
 
 
@@ -107,7 +107,7 @@ from(bucket: "{INFLUX_BUCKET}")
 '''
     result = {}
     latest_time = None
-    for row in influx_query(flux):
+    for row in influx_query(flux, timeout=8):  # live = rapid; nu blocăm request-ul
         entity = row.get("entity_id")
         key = ENTITY_TO_KEY.get(entity)
         if not key:
@@ -130,6 +130,7 @@ WINDOW_BY_RANGE = {
     "6h": "2m",
     "12h": "5m",
     "24h": "10m",
+    "7d": "1h",
 }
 
 
@@ -148,7 +149,7 @@ from(bucket: "{INFLUX_BUCKET}")
   |> pivot(rowKey: ["_time"], columnKey: ["entity_id"], valueColumn: "_value")
 '''
     points = []
-    for row in influx_query(flux):
+    for row in influx_query(flux, timeout=90):  # istoric = greu; rulează în fundal
         timestamp = row.get("_time")
         if not timestamp:
             continue
@@ -175,44 +176,60 @@ from(bucket: "{INFLUX_BUCKET}")
     return points
 
 
-# ── Cache pe istoric ──
-# Istoricul se schimba lent (puncte la 30s-10m), dar interogarea e scumpa (5-10s).
-# Il pastram in cache cateva secunde, ca refresh-urile dese (la 5s) sa fie instant.
-# Valorile "live" raman proaspete la fiecare request (interogare rapida, ~0.3s).
-HISTORY_TTL = 30  # secunde
+# ── Cache pe istoric (stale-while-revalidate) ──
+# Istoricul se schimba lent dar interogarea e scumpa (12h ~5s, 24h ~10s, 7d >15s).
+# Strategie: request-ul utilizatorului NU asteapta niciodata interogarea grea.
+#   - daca avem cache proaspat -> il returnam;
+#   - daca e vechi/lipsa -> returnam ce avem (sau gol) si recalculam in FUNDAL.
+# Asa nu apar request-uri blocate / „API indisponibil", indiferent de interval.
+# 7d e foarte scump (InfluxDB scaneaza ~o saptamana de date brute, ~70s) -> TTL mare,
+# il recalculam rar si doar cat e vizionat activ (vezi _warmer_loop).
+TTL_BY_RANGE = {"1h": 15, "3h": 20, "6h": 30, "12h": 30, "24h": 60, "7d": 600}
+DEFAULT_TTL = 30
+WARM_ACTIVE_WINDOW = 600  # mentinem cald un interval cerut in ultimele 10 min
+
 _history_cache = {}        # range -> (timestamp, points)
 _history_computing = {}    # range -> bool
+_warm_ranges = {"12h": time.time()}  # range -> ultimul moment cerut (12h e default)
 _cache_lock = threading.Lock()
 
 
-def history_values_cached(time_range: str):
-    now = time.time()
-    with _cache_lock:
-        entry = _history_cache.get(time_range)
-        if entry and now - entry[0] < HISTORY_TTL:
-            return entry[1]
-        # daca altcineva recalculeaza deja si avem date vechi, le servim pe alea
-        # (evitam mai multe interogari grele simultane pe acelasi interval)
-        if _history_computing.get(time_range) and entry:
-            return entry[1]
-        _history_computing[time_range] = True
+def ttl_for(time_range: str) -> int:
+    return TTL_BY_RANGE.get(time_range, DEFAULT_TTL)
+
+
+def _recompute(time_range: str):
     try:
         points = history_values(time_range)
         with _cache_lock:
             _history_cache[time_range] = (time.time(), points)
-        return points
+    except Exception:
+        pass  # pastram cache-ul vechi; reincercam la urmatoarea tura
     finally:
         with _cache_lock:
             _history_computing[time_range] = False
 
 
-# ── Pre-incalzire cache ──
-# Un thread de fundal recalculeaza periodic istoricul intervalelor folosite recent,
-# ca request-urile utilizatorului sa gaseasca mereu cache cald (~0.2s), nu interogarea
-# lenta de 5-10s. Un interval se "incalzeste" dupa ce a fost cerut cel putin o data.
-WARM_INTERVAL = 25  # secunde (< HISTORY_TTL ca sa nu expire intre incalziri)
-WARM_ACTIVE_WINDOW = 300  # incalzim doar intervalele cerute in ultimele 5 min
-_warm_ranges = {"12h": time.time()}  # range -> ultimul moment cerut (12h e default)
+def _trigger(time_range: str):
+    # porneste un recalcul in fundal daca nu ruleaza deja unul pentru acest interval
+    with _cache_lock:
+        if _history_computing.get(time_range):
+            return
+        _history_computing[time_range] = True
+    threading.Thread(target=_recompute, args=(time_range,), daemon=True).start()
+
+
+def history_values_cached(time_range: str):
+    """Returneaza (points, pending). Nu blocheaza niciodata pe interogarea grea."""
+    now = time.time()
+    with _cache_lock:
+        entry = _history_cache.get(time_range)
+    fresh = entry and (now - entry[0] < ttl_for(time_range))
+    if not fresh:
+        _trigger(time_range)  # reimprospatam in fundal
+    points = entry[1] if entry else []
+    pending = entry is None  # inca nu avem deloc date pentru acest interval
+    return points, pending
 
 
 def mark_range(time_range: str):
@@ -221,23 +238,25 @@ def mark_range(time_range: str):
 
 
 def _warmer_loop():
+    # la pornire, incalzim intervalul default ca prima incarcare sa aiba date
+    _trigger("12h")
     while True:
         now = time.time()
         with _cache_lock:
-            ranges = [r for r, t in _warm_ranges.items() if now - t < WARM_ACTIVE_WINDOW]
-        for time_range in ranges:
-            try:
-                points = history_values(time_range)
-                with _cache_lock:
-                    _history_cache[time_range] = (time.time(), points)
-            except Exception:
-                pass  # la urmatoarea tura reincercam
-        time.sleep(WARM_INTERVAL)
+            active = [r for r, t in _warm_ranges.items() if now - t < WARM_ACTIVE_WINDOW]
+            stale = []
+            for r in active:
+                e = _history_cache.get(r)
+                if (not e) or (now - e[0] > ttl_for(r) * 0.8):
+                    stale.append(r)
+        for r in stale:
+            _trigger(r)
+        time.sleep(10)
 
 
 def build_summary(time_range: str):
     live_raw, updated_at = latest_values()
-    history = history_values_cached(time_range)
+    history, history_pending = history_values_cached(time_range)
     live = {
         "voltage": {
             "l1": live_raw.get("voltage_l1"),
@@ -266,6 +285,7 @@ def build_summary(time_range: str):
         "updatedAt": updated_at,
         "live": live,
         "history": history,
+        "historyPending": history_pending,
     }
 
 

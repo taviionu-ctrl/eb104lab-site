@@ -87,6 +87,7 @@ const reportRows = [
           <button type="button" data-range="6h">6h</button>
           <button type="button" class="active" data-range="12h">12h</button>
           <button type="button" data-range="24h">24h</button>
+          <button type="button" data-range="7d">7 zile</button>
         </div>
         <div class="top-live" id="top-live">
           <span class="pulse-dot"></span>
@@ -137,6 +138,10 @@ const reportRows = [
             </div>
           </div>
 
+          <div class="chart-pending" id="chart-pending" hidden>
+            <span class="pulse-dot"></span>
+            Se încarcă istoricul…
+          </div>
           <svg id="chart" class="chart-svg" viewBox="0 0 1000 360" role="img" aria-label="Grafic istoric parametri electrici">
             <defs>
               <linearGradient id="areaFill" x1="0" y1="0" x2="0" y2="1">
@@ -377,6 +382,8 @@ const reportRows = [
   }
   function drawChart() {
     var points = (dataCache && dataCache.history) || [];
+    var pendingEl = $('chart-pending');
+    if (pendingEl) pendingEl.hidden = !(dataCache && dataCache.historyPending && points.length < 2);
     var cfg = chartConfig[activeChart];
     var r = valueRange(points, cfg.keys);
     drawGrid(r.min, r.max, cfg.unit);
@@ -607,7 +614,14 @@ const reportRows = [
   .dot-total { background: #cbd5e1; }
 
   /* ── Chart card ── */
-  .chart-card { min-width: 0; display: flex; flex-direction: column; }
+  .chart-card { min-width: 0; display: flex; flex-direction: column; position: relative; }
+  .chart-pending {
+    position: absolute; left: 50%; top: 56%; transform: translate(-50%, -50%);
+    display: inline-flex; align-items: center; gap: 9px; z-index: 2;
+    padding: 8px 16px; border-radius: 999px;
+    background: rgba(8,18,30,0.86); border: 1px solid var(--border-cyan);
+    color: var(--cyan); font-size: 0.82rem; font-weight: 600;
+  }
   .chart-tabs { display: inline-flex; gap: 4px; border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 4px; background: rgba(8,18,30,0.7); }
   .chart-tabs button {
     height: 30px; padding: 0 11px; border: 0; border-radius: 4px; cursor: pointer;

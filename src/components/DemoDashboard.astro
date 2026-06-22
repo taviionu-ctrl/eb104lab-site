@@ -453,11 +453,24 @@ const reportRows = [
     if (side) side.classList.toggle('offline', !online);
   }
 
+  var inFlight = false;
+  var failCount = 0;
+
   function loadData() {
-    fetch(API + '?range=' + encodeURIComponent(range), { cache: 'no-store' })
+    if (inFlight) return; // nu suprapunem request-uri (cel vechi încă rulează)
+    inFlight = true;
+    var ctrl = new AbortController();
+    var killer = setTimeout(function () { ctrl.abort(); }, 12000); // timeout dur
+    fetch(API + '?range=' + encodeURIComponent(range), { cache: 'no-store', signal: ctrl.signal })
       .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
-      .then(function (d) { dataCache = d; updateLive(d); drawChart(); setStatus(true); })
-      .catch(function (err) { setStatus(false); console.warn('Dashboard API error', err); });
+      .then(function (d) { dataCache = d; updateLive(d); drawChart(); failCount = 0; setStatus(true); })
+      .catch(function (err) {
+        failCount++;
+        // o eroare izolată nu strică UI-ul; marcăm „indisponibil" doar după 2 la rând
+        if (failCount >= 2) setStatus(false);
+        console.warn('Dashboard API error', err);
+      })
+      .finally(function () { clearTimeout(killer); inFlight = false; });
   }
 
   // ── Controls ──

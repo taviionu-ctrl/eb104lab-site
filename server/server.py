@@ -3,6 +3,7 @@ import csv
 import io
 import json
 import os
+import threading
 import time
 import urllib.request
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -121,7 +122,19 @@ from(bucket: "{INFLUX_BUCKET}")
     return result, latest_time
 
 
+# Bucket adaptiv: pe intervale mari folosim ferestre mai mari -> mai putine puncte,
+# interogare mult mai rapida (24h trecea de 10s cu fereastra de 2m).
+WINDOW_BY_RANGE = {
+    "1h": "30s",
+    "3h": "1m",
+    "6h": "2m",
+    "12h": "5m",
+    "24h": "10m",
+}
+
+
 def history_values(time_range: str):
+    window = WINDOW_BY_RANGE.get(time_range, "2m")
     # pivot => fiecare timestamp devine un rand cu toate fazele aliniate pe acelasi x
     flux = f'''
 from(bucket: "{INFLUX_BUCKET}")
@@ -129,7 +142,7 @@ from(bucket: "{INFLUX_BUCKET}")
   |> filter(fn: (r) => r["_field"] == "value")
   |> filter(fn: (r) => r["domain"] == "sensor")
   |> filter(fn: (r) => contains(value: r["entity_id"], set: [{ENTITY_SET}]))
-  |> aggregateWindow(every: 2m, fn: mean, createEmpty: false)
+  |> aggregateWindow(every: {window}, fn: mean, createEmpty: false)
   |> keep(columns: ["_time", "entity_id", "_value"])
   |> group()
   |> pivot(rowKey: ["_time"], columnKey: ["entity_id"], valueColumn: "_value")
@@ -162,9 +175,69 @@ from(bucket: "{INFLUX_BUCKET}")
     return points
 
 
+# ── Cache pe istoric ──
+# Istoricul se schimba lent (puncte la 30s-10m), dar interogarea e scumpa (5-10s).
+# Il pastram in cache cateva secunde, ca refresh-urile dese (la 5s) sa fie instant.
+# Valorile "live" raman proaspete la fiecare request (interogare rapida, ~0.3s).
+HISTORY_TTL = 30  # secunde
+_history_cache = {}        # range -> (timestamp, points)
+_history_computing = {}    # range -> bool
+_cache_lock = threading.Lock()
+
+
+def history_values_cached(time_range: str):
+    now = time.time()
+    with _cache_lock:
+        entry = _history_cache.get(time_range)
+        if entry and now - entry[0] < HISTORY_TTL:
+            return entry[1]
+        # daca altcineva recalculeaza deja si avem date vechi, le servim pe alea
+        # (evitam mai multe interogari grele simultane pe acelasi interval)
+        if _history_computing.get(time_range) and entry:
+            return entry[1]
+        _history_computing[time_range] = True
+    try:
+        points = history_values(time_range)
+        with _cache_lock:
+            _history_cache[time_range] = (time.time(), points)
+        return points
+    finally:
+        with _cache_lock:
+            _history_computing[time_range] = False
+
+
+# ── Pre-incalzire cache ──
+# Un thread de fundal recalculeaza periodic istoricul intervalelor folosite recent,
+# ca request-urile utilizatorului sa gaseasca mereu cache cald (~0.2s), nu interogarea
+# lenta de 5-10s. Un interval se "incalzeste" dupa ce a fost cerut cel putin o data.
+WARM_INTERVAL = 25  # secunde (< HISTORY_TTL ca sa nu expire intre incalziri)
+WARM_ACTIVE_WINDOW = 300  # incalzim doar intervalele cerute in ultimele 5 min
+_warm_ranges = {"12h": time.time()}  # range -> ultimul moment cerut (12h e default)
+
+
+def mark_range(time_range: str):
+    with _cache_lock:
+        _warm_ranges[time_range] = time.time()
+
+
+def _warmer_loop():
+    while True:
+        now = time.time()
+        with _cache_lock:
+            ranges = [r for r, t in _warm_ranges.items() if now - t < WARM_ACTIVE_WINDOW]
+        for time_range in ranges:
+            try:
+                points = history_values(time_range)
+                with _cache_lock:
+                    _history_cache[time_range] = (time.time(), points)
+            except Exception:
+                pass  # la urmatoarea tura reincercam
+        time.sleep(WARM_INTERVAL)
+
+
 def build_summary(time_range: str):
     live_raw, updated_at = latest_values()
-    history = history_values(time_range)
+    history = history_values_cached(time_range)
     live = {
         "voltage": {
             "l1": live_raw.get("voltage_l1"),
@@ -217,6 +290,7 @@ class Handler(BaseHTTPRequestHandler):
         if parsed.path == "/api/janitza/summary":
             params = parse_qs(parsed.query)
             time_range = normalize_range(params.get("range", ["12h"])[0])
+            mark_range(time_range)
             try:
                 self.send_json(200, build_summary(time_range))
             except Exception as exc:
@@ -226,6 +300,8 @@ class Handler(BaseHTTPRequestHandler):
 
 
 if __name__ == "__main__":
+    warmer = threading.Thread(target=_warmer_loop, daemon=True)
+    warmer.start()
     server = ThreadingHTTPServer(("127.0.0.1", PORT), Handler)
     print(f"eb104lab-api listening on 127.0.0.1:{PORT}", flush=True)
     server.serve_forever()

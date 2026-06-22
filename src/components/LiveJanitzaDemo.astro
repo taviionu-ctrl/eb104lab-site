@@ -278,16 +278,29 @@
     if (state) state.classList.toggle('error', !!error);
   }
 
+  var inFlight = false;
+  var failCount = 0;
+
   async function loadData() {
+    if (inFlight) return; // nu suprapunem request-uri
+    inFlight = true;
+    var ctrl = new AbortController();
+    var killer = setTimeout(function () { ctrl.abort(); }, 12000);
     try {
-      var response = await fetch('/api/janitza/summary?range=12h', { cache: 'no-store' });
+      var response = await fetch('/api/janitza/summary?range=12h', { cache: 'no-store', signal: ctrl.signal });
       if (!response.ok) throw new Error('HTTP ' + response.status);
       dataCache = await response.json();
       updateLive(dataCache);
       drawChart();
+      failCount = 0;
     } catch (err) {
-      setStatus('API indisponibil', true);
+      failCount++;
+      // o eroare izolată nu strică UI-ul; marcăm doar după 2 eșecuri consecutive
+      if (failCount >= 2) setStatus('API indisponibil', true);
       console.warn('Live API error', err);
+    } finally {
+      clearTimeout(killer);
+      inFlight = false;
     }
   }
 

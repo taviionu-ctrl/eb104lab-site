@@ -25,13 +25,14 @@ const navItems = [
   { id: 'reports', label: 'Rapoarte', icon: '<rect x="4" y="3" width="16" height="18" rx="2"/><line x1="8" y1="8" x2="16" y2="8"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="8" y1="16" x2="13" y2="16"/>' },
 ];
 
-// Rânduri tabel — placeholder până extindem API-ul cu energie cumulată.
+// Rânduri tabel — calculate în frontend din history (energie/vârf/medie).
+// Se populează când intervalul încărcat acoperă perioada; altfel „în pregătire".
 const reportRows = [
-  { period: 'Ultima oră', energy: '—', peak: '—', avg: '—', status: 'pregatire' },
-  { period: 'Astăzi', energy: '—', peak: '—', avg: '—', status: 'pregatire' },
-  { period: 'Ieri', energy: '—', peak: '—', avg: '—', status: 'pregatire' },
-  { period: 'Luna curentă', energy: '—', peak: '—', avg: '—', status: 'pregatire' },
-  { period: 'An curent', energy: '—', peak: '—', avg: '—', status: 'pregatire' },
+  { key: 'shown', period: 'Interval afișat' },
+  { key: 'h1', period: 'Ultima oră' },
+  { key: 'today', period: 'Astăzi' },
+  { key: 'yest', period: 'Ieri' },
+  { key: 'd7', period: 'Ultimele 7 zile' },
 ];
 ---
 
@@ -260,7 +261,7 @@ const reportRows = [
         <article class="card table-card">
           <div class="card-head">
             <div><span class="card-kicker">Rapoarte</span><h2>Consum &amp; energie</h2></div>
-            <span class="table-note">Valori cumulate — în pregătire</span>
+            <span class="table-note">Estimat din puterea activă măsurată</span>
           </div>
           <div class="table-scroll">
             <table class="report-table">
@@ -270,11 +271,11 @@ const reportRows = [
               <tbody>
                 {reportRows.map(r => (
                   <tr>
-                    <td>{r.period}</td>
-                    <td class="mono">{r.energy}</td>
-                    <td class="mono">{r.peak}</td>
-                    <td class="mono">{r.avg}</td>
-                    <td><span class="tag-pending">în pregătire</span></td>
+                    <td id={`rep-${r.key}-period`}>{r.period}</td>
+                    <td class="mono" id={`rep-${r.key}-e`}>—</td>
+                    <td class="mono" id={`rep-${r.key}-p`}>—</td>
+                    <td class="mono" id={`rep-${r.key}-a`}>—</td>
+                    <td><span class="rep-badge rep-pending" id={`rep-${r.key}-s`}>în pregătire</span></td>
                   </tr>
                 ))}
               </tbody>
@@ -428,6 +429,65 @@ const reportRows = [
     setBadge('an-balance', unb === null ? null : (unb > TH.unbalanceWarn ? 'warn' : 'ok'));
 
     setBadge('an-spikes', q ? (q.spikes > 0 ? 'warn' : 'ok') : null);
+  }
+
+  // ── Tabel rapoarte (din history; energie = integrare puterii totale) ──
+  function periodStats(points, start, end) {
+    var pts = points.filter(function (p) {
+      if (clean('power_total', p.power_total) === null) return false;
+      var t = new Date(p.time).getTime();
+      return t >= start && t <= end;
+    });
+    if (pts.length < 2) return null;
+    var wh = 0, peak = -Infinity, sum = 0;
+    for (var i = 0; i < pts.length; i++) {
+      var v = clean('power_total', pts[i].power_total);
+      if (v > peak) peak = v;
+      sum += v;
+      if (i > 0) {
+        var t0 = new Date(pts[i - 1].time).getTime(), t1 = new Date(pts[i].time).getTime();
+        var v0 = clean('power_total', pts[i - 1].power_total);
+        wh += ((v0 + v) / 2) * ((t1 - t0) / 3600000);
+      }
+    }
+    return { kwh: wh / 1000, peak: peak, avg: sum / pts.length, covStart: new Date(pts[0].time).getTime() };
+  }
+
+  function setReportRow(key, stats, start, end) {
+    var eEl = $('rep-' + key + '-e'), pEl = $('rep-' + key + '-p'), aEl = $('rep-' + key + '-a'), sEl = $('rep-' + key + '-s');
+    if (!stats) {
+      if (eEl) eEl.textContent = '—'; if (pEl) pEl.textContent = '—'; if (aEl) aEl.textContent = '—';
+      if (sEl) { sEl.textContent = 'în pregătire'; sEl.className = 'rep-badge rep-pending'; }
+      return;
+    }
+    if (eEl) eEl.textContent = fmt(stats.kwh, 2) + ' kWh';
+    if (pEl) pEl.textContent = fmt(stats.peak, 0) + ' W';
+    if (aEl) aEl.textContent = fmt(stats.avg, 0) + ' W';
+    // acoperire parțială dacă datele încep mult după începutul perioadei
+    var partial = (stats.covStart - start) > (end - start) * 0.1;
+    if (sEl) {
+      sEl.textContent = partial ? 'parțial' : 'calculat';
+      sEl.className = 'rep-badge ' + (partial ? 'rep-partial' : 'rep-ok');
+    }
+  }
+
+  function updateReports(d) {
+    var points = (d && d.history) || [];
+    var now = Date.now();
+    var DAY = 86400000;
+
+    var pe = $('rep-shown-period');
+    if (pe) pe.textContent = 'Interval afișat · ' + range;
+    if (points.length >= 2) {
+      var first = new Date(points[0].time).getTime();
+      setReportRow('shown', periodStats(points, first, now), first, now);
+    } else { setReportRow('shown', null); }
+
+    setReportRow('h1', periodStats(points, now - 3600000, now), now - 3600000, now);
+    var mid = localMidnight();
+    setReportRow('today', periodStats(points, mid, now), mid, now);
+    setReportRow('yest', periodStats(points, mid - DAY, mid), mid - DAY, mid);
+    setReportRow('d7', periodStats(points, now - 7 * DAY, now), now - 7 * DAY, now);
   }
 
   // ── Chart ──
@@ -616,7 +676,7 @@ const reportRows = [
       .then(function (d) {
         dataCache = d;
         updateLive(d); drawChart();
-        updateBusiness(d); updateDataQuality(d); updateAnomaly(d);
+        updateBusiness(d); updateDataQuality(d); updateAnomaly(d); updateReports(d);
         failCount = 0; setStatus(true);
       })
       .catch(function (err) {
@@ -853,7 +913,10 @@ const reportRows = [
   .report-table td { padding: 12px 14px; border-bottom: 1px solid rgba(255,255,255,0.04); color: var(--text-muted); }
   .report-table tr:last-child td { border-bottom: none; }
   .report-table .mono { font-family: 'Courier New', monospace; color: var(--text-dim); }
-  .tag-pending { font-size: 0.68rem; color: var(--amber); background: var(--amber-dim); border: 1px solid rgba(245,158,11,0.25); border-radius: 3px; padding: 2px 8px; }
+  .rep-badge { font-size: 0.66rem; font-weight: 700; padding: 2px 10px; border-radius: 999px; border: 1px solid var(--border); color: var(--text-dim); white-space: nowrap; }
+  .rep-ok { color: var(--green-light); background: var(--green-dim); border-color: var(--border-med); }
+  .rep-partial { color: var(--amber); background: var(--amber-dim); border-color: rgba(245,158,11,0.28); }
+  .rep-pending { color: var(--text-dim); background: rgba(255,255,255,0.03); }
 
   /* ── Responsive ── */
   @media (max-width: 1100px) {

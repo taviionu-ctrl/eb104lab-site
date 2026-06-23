@@ -25,14 +25,12 @@ const navItems = [
   { id: 'reports', label: 'Rapoarte', icon: '<rect x="4" y="3" width="16" height="18" rx="2"/><line x1="8" y1="8" x2="16" y2="8"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="8" y1="16" x2="13" y2="16"/>' },
 ];
 
-// Rânduri tabel — calculate în frontend din history (energie/vârf/medie).
-// Se populează când intervalul încărcat acoperă perioada; altfel „în pregătire".
+// Rânduri tabel — decuplate de grafic: calculate dintr-o fereastră fixă de 24h,
+// ca să rămână stabile indiferent de intervalul selectat pe grafic.
 const reportRows = [
-  { key: 'shown', period: 'Interval afișat' },
   { key: 'h1', period: 'Ultima oră' },
   { key: 'today', period: 'Astăzi' },
-  { key: 'yest', period: 'Ieri' },
-  { key: 'd7', period: 'Ultimele 7 zile' },
+  { key: 'd24', period: 'Ultimele 24h' },
 ];
 ---
 
@@ -261,7 +259,7 @@ const reportRows = [
         <article class="card table-card">
           <div class="card-head">
             <div><span class="card-kicker">Rapoarte</span><h2>Consum &amp; energie</h2></div>
-            <span class="table-note">Estimat din puterea activă măsurată</span>
+            <span class="table-note">Estimat din puterea activă · fereastră 24h (independent de grafic)</span>
           </div>
           <div class="table-scroll">
             <table class="report-table">
@@ -463,31 +461,30 @@ const reportRows = [
     if (eEl) eEl.textContent = fmt(stats.kwh, 2) + ' kWh';
     if (pEl) pEl.textContent = fmt(stats.peak, 0) + ' W';
     if (aEl) aEl.textContent = fmt(stats.avg, 0) + ' W';
-    // acoperire parțială dacă datele încep mult după începutul perioadei
-    var partial = (stats.covStart - start) > (end - start) * 0.1;
+    // parțial doar dacă lipsește o porțiune reală din perioadă (nu un simplu
+    // decalaj de un bucket); toleranță = max(20% din fereastră, 12 min)
+    var partial = (stats.covStart - start) > Math.max((end - start) * 0.2, 720000);
     if (sEl) {
       sEl.textContent = partial ? 'parțial' : 'calculat';
       sEl.className = 'rep-badge ' + (partial ? 'rep-partial' : 'rep-ok');
     }
   }
 
+  // Tabelul folosește propria fereastră (24h), nu intervalul graficului -> stabil.
   function updateReports(d) {
     var points = (d && d.history) || [];
     var now = Date.now();
-    var DAY = 86400000;
-
-    var pe = $('rep-shown-period');
-    if (pe) pe.textContent = 'Interval afișat · ' + range;
-    if (points.length >= 2) {
-      var first = new Date(points[0].time).getTime();
-      setReportRow('shown', periodStats(points, first, now), first, now);
-    } else { setReportRow('shown', null); }
-
     setReportRow('h1', periodStats(points, now - 3600000, now), now - 3600000, now);
     var mid = localMidnight();
     setReportRow('today', periodStats(points, mid, now), mid, now);
-    setReportRow('yest', periodStats(points, mid - DAY, mid), mid - DAY, mid);
-    setReportRow('d7', periodStats(points, now - 7 * DAY, now), now - 7 * DAY, now);
+    setReportRow('d24', periodStats(points, now - 86400000, now), now - 86400000, now);
+  }
+
+  function loadReports() {
+    fetch(API + '?range=24h', { cache: 'no-store' })
+      .then(function (r) { return r.ok ? r.json() : Promise.reject(); })
+      .then(function (d) { updateReports(d); })
+      .catch(function () { /* păstrăm ultimele valori bune */ });
   }
 
   // ── Chart ──
@@ -677,7 +674,7 @@ const reportRows = [
         if (myToken !== reqToken) return; // a venit între timp un request mai nou
         dataCache = d;
         updateLive(d); drawChart();
-        updateBusiness(d); updateDataQuality(d); updateAnomaly(d); updateReports(d);
+        updateBusiness(d); updateDataQuality(d); updateAnomaly(d);
         failCount = 0; setStatus(true);
       })
       .catch(function (err) {
@@ -711,6 +708,10 @@ const reportRows = [
   // ── Start ──
   loadData();
   timer = window.setInterval(loadData, REFRESH_MS);
+
+  // Tabelul de rapoarte are propriul ritm (mai rar) și propria sursă (24h)
+  loadReports();
+  window.setInterval(loadReports, 15000);
 })();
 </script>
 

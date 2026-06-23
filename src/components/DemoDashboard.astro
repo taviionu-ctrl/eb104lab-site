@@ -18,7 +18,7 @@ function describeArc(cx, cy, r, startAngle, endAngle) {
 const GAUGE_TRACK = describeArc(60, 60, 44, 225, 495);
 
 const navItems = [
-  { id: 'overview', label: 'Overview', active: true, icon: '<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>' },
+  { id: 'overview', label: 'Sumar', active: true, icon: '<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>' },
   { id: 'voltage', label: 'Tensiuni', icon: '<polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>' },
   { id: 'current', label: 'Curenți', icon: '<path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>' },
   { id: 'power', label: 'Putere', icon: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/>' },
@@ -47,7 +47,7 @@ const reportRows = [
       </span>
       <span class="brand-text">
         <strong>EB104 Lab</strong>
-        <small>Smart Energy Monitoring</small>
+        <small>Monitorizare energetică</small>
       </span>
     </div>
 
@@ -63,7 +63,7 @@ const reportRows = [
     <div class="side-foot">
       <div class="side-source">
         <span class="src-label">Sursă date</span>
-        <span class="src-value">Janitza · Power Quality</span>
+        <span class="src-value">Janitza · analizor rețea</span>
       </div>
       <div class="side-status" id="side-status">
         <span class="pulse-dot"></span>
@@ -77,8 +77,8 @@ const reportRows = [
     <!-- Topbar -->
     <header class="dash-topbar">
       <div class="top-title">
-        <h1>Active Dashboard</h1>
-        <p>Janitza Power Quality Dashboard</p>
+        <h1>Monitorizare în timp real</h1>
+        <p>Analiză calitate energie · analizor de rețea</p>
       </div>
 
       <div class="top-controls">
@@ -159,16 +159,16 @@ const reportRows = [
           </svg>
           <div class="chart-foot">
             <div class="chart-legend" id="chart-legend"></div>
-            <span class="data-quality" id="data-quality" title="Valori valide după filtrarea spike-urilor">
-              <span class="dq-dot"></span>Data quality: <b id="dq-pct">—</b><span id="dq-spikes"></span>
+            <span class="data-quality" id="data-quality" title="Valori valide după filtrarea valorilor aberante">
+              <span class="dq-dot"></span>Calitate date: <b id="dq-pct">—</b><span id="dq-spikes"></span>
             </span>
           </div>
         </article>
 
         <article class="card now-card">
           <div class="card-head">
-            <span class="card-kicker">NOW</span>
-            <span class="now-state" id="now-state"><span class="pulse-dot"></span>real-time</span>
+            <span class="card-kicker">ACUM</span>
+            <span class="now-state" id="now-state"><span class="pulse-dot"></span>timp real</span>
           </div>
           <div class="now-power">
             <strong id="now-total">--</strong>
@@ -244,12 +244,12 @@ const reportRows = [
           </article>
 
           <article class="card anomaly-card">
-            <div class="card-head"><div><span class="card-kicker">Stare sistem</span><h2>Anomaly detection</h2></div></div>
+            <div class="card-head"><div><span class="card-kicker">Diagnoză</span><h2>Stare parametri</h2></div></div>
             <ul class="anomaly-list">
               <li><span class="an-name">Tensiune</span><span class="an-badge" id="an-voltage">—</span></li>
               <li><span class="an-name">Curent</span><span class="an-badge" id="an-current">—</span></li>
               <li><span class="an-name">Echilibru faze</span><span class="an-badge" id="an-balance">—</span></li>
-              <li><span class="an-name">Spike-uri Modbus</span><span class="an-badge" id="an-spikes">—</span></li>
+              <li><span class="an-name">Citiri aberante</span><span class="an-badge" id="an-spikes">—</span></li>
             </ul>
           </article>
         </div>
@@ -368,7 +368,7 @@ const reportRows = [
   }
   function setBadge(id, level) {
     var el = $(id); if (!el) return;
-    var label = level === 'crit' ? 'Critical' : (level === 'warn' ? 'Warning' : 'OK');
+    var label = level === 'crit' ? 'Critic' : (level === 'warn' ? 'Atenție' : 'Normal');
     el.textContent = label;
     el.className = 'an-badge an-' + (level || 'ok');
   }
@@ -399,7 +399,7 @@ const reportRows = [
     var pctEl = $('dq-pct'), spEl = $('dq-spikes');
     if (!q) { if (pctEl) pctEl.textContent = '—'; if (spEl) spEl.textContent = ''; return; }
     if (pctEl) pctEl.textContent = fmt(q.validPct, 1) + '%';
-    if (spEl) spEl.textContent = ' · ' + (q.spikes || 0) + ' spike-uri filtrate';
+    if (spEl) spEl.textContent = ' · ' + (q.spikes || 0) + ' valori aberante filtrate';
   }
 
   // ── Anomaly detection (din valorile live) ──

@@ -157,7 +157,12 @@ const reportRows = [
             <polyline id="c-b" class="c-line c-b" points=""></polyline>
             <polyline id="c-c" class="c-line c-c" points=""></polyline>
           </svg>
-          <div class="chart-legend" id="chart-legend"></div>
+          <div class="chart-foot">
+            <div class="chart-legend" id="chart-legend"></div>
+            <span class="data-quality" id="data-quality" title="Valori valide după filtrarea spike-urilor">
+              <span class="dq-dot"></span>Data quality: <b id="dq-pct">—</b><span id="dq-spikes"></span>
+            </span>
+          </div>
         </article>
 
         <article class="card now-card">
@@ -171,14 +176,27 @@ const reportRows = [
           </div>
           <div class="now-label">Putere activă totală</div>
 
-          <div class="now-energy">
-            {['Oră', 'Zi', 'Lună', 'An'].map(p => (
-              <div class="energy-cell">
-                <span class="ec-period">{p}</span>
-                <span class="ec-value">—</span>
-                <span class="ec-badge">în pregătire</span>
-              </div>
-            ))}
+          <div class="now-kpis">
+            <div class="nk">
+              <span class="nk-label">Consum azi <i class="est">est.</i></span>
+              <span class="nk-val" id="kpi-energy">—</span>
+            </div>
+            <div class="nk">
+              <span class="nk-label">Cost azi <i class="est">est.</i></span>
+              <span class="nk-val" id="kpi-cost">—</span>
+            </div>
+            <div class="nk">
+              <span class="nk-label">Vârf putere azi</span>
+              <span class="nk-val" id="kpi-peak">—</span>
+            </div>
+            <div class="nk">
+              <span class="nk-label">Fază dominantă</span>
+              <span class="nk-val" id="kpi-domphase">—</span>
+            </div>
+            <div class="nk">
+              <span class="nk-label">Dezechilibru faze</span>
+              <span class="nk-val" id="kpi-unbalance">—</span>
+            </div>
           </div>
         </article>
       </div>
@@ -215,14 +233,26 @@ const reportRows = [
           </div>
         </article>
 
-        <article class="card current-card">
-          <div class="card-head"><div><span class="card-kicker">Curenți</span><h2>Pe fază (A)</h2></div></div>
-          <div class="cur-list">
-            <div class="cur-row"><span class="dot dot-l1"></span><span class="cur-name">L1</span><span class="cur-bar"><i id="cb-l1"></i></span><strong id="cur-l1">--</strong><small>A</small></div>
-            <div class="cur-row"><span class="dot dot-l2"></span><span class="cur-name">L2</span><span class="cur-bar"><i id="cb-l2"></i></span><strong id="cur-l2">--</strong><small>A</small></div>
-            <div class="cur-row"><span class="dot dot-l3"></span><span class="cur-name">L3</span><span class="cur-bar"><i id="cb-l3"></i></span><strong id="cur-l3">--</strong><small>A</small></div>
-          </div>
-        </article>
+        <div class="right-stack">
+          <article class="card current-card">
+            <div class="card-head"><div><span class="card-kicker">Curenți</span><h2>Pe fază (A)</h2></div></div>
+            <div class="cur-list">
+              <div class="cur-row"><span class="dot dot-l1"></span><span class="cur-name">L1</span><span class="cur-bar"><i id="cb-l1"></i></span><strong id="cur-l1">--</strong><small>A</small></div>
+              <div class="cur-row"><span class="dot dot-l2"></span><span class="cur-name">L2</span><span class="cur-bar"><i id="cb-l2"></i></span><strong id="cur-l2">--</strong><small>A</small></div>
+              <div class="cur-row"><span class="dot dot-l3"></span><span class="cur-name">L3</span><span class="cur-bar"><i id="cb-l3"></i></span><strong id="cur-l3">--</strong><small>A</small></div>
+            </div>
+          </article>
+
+          <article class="card anomaly-card">
+            <div class="card-head"><div><span class="card-kicker">Stare sistem</span><h2>Anomaly detection</h2></div></div>
+            <ul class="anomaly-list">
+              <li><span class="an-name">Tensiune</span><span class="an-badge" id="an-voltage">—</span></li>
+              <li><span class="an-name">Curent</span><span class="an-badge" id="an-current">—</span></li>
+              <li><span class="an-name">Echilibru faze</span><span class="an-badge" id="an-balance">—</span></li>
+              <li><span class="an-name">Spike-uri Modbus</span><span class="an-badge" id="an-spikes">—</span></li>
+            </ul>
+          </article>
+        </div>
       </div>
 
       <!-- Tabel rapoarte -->
@@ -286,6 +316,119 @@ const reportRows = [
   }
   function $(id) { return document.getElementById(id); }
   function setText(id, v, d) { var el = $(id); if (el) el.textContent = fmt(v, d); }
+
+  // ── Parametri business (ușor de modificat) ──
+  var TARIFF_RON_PER_KWH = 0.85; // tarif energie electrică
+  // Praguri anomaly detection
+  var TH = {
+    voltWarnMin: 210, voltWarnMax: 240,   // avertisment tensiune
+    voltCritMin: 195, voltCritMax: 255,   // critic tensiune
+    currWarn: 80, currCrit: 95,           // curent (A)
+    unbalanceWarn: 60                     // dezechilibru curent (%)
+  };
+
+  function num(v) { var n = Number(v); return isFinite(n) ? n : null; }
+  function localMidnight() { var d = new Date(); d.setHours(0, 0, 0, 0); return d.getTime(); }
+
+  // Energie (kWh) prin integrare trapezoidală a puterii totale peste punctele de azi.
+  function energyTodayKwh(points) {
+    var from = localMidnight();
+    var pts = points.filter(function (p) {
+      return clean('power_total', p.power_total) !== null && new Date(p.time).getTime() >= from;
+    });
+    if (pts.length < 2) return null;
+    var wh = 0;
+    for (var i = 1; i < pts.length; i++) {
+      var t0 = new Date(pts[i - 1].time).getTime(), t1 = new Date(pts[i].time).getTime();
+      var p0 = clean('power_total', pts[i - 1].power_total), p1 = clean('power_total', pts[i].power_total);
+      wh += ((p0 + p1) / 2) * ((t1 - t0) / 3600000);
+    }
+    return wh / 1000;
+  }
+  function peakTodayW(points) {
+    var from = localMidnight(), peak = null;
+    points.forEach(function (p) {
+      var v = clean('power_total', p.power_total);
+      if (v !== null && new Date(p.time).getTime() >= from && (peak === null || v > peak)) peak = v;
+    });
+    return peak;
+  }
+  // Dezechilibru curent (%) = (Imax - Imin) / Imax * 100
+  function currentUnbalance(c1, c2, c3) {
+    var vals = [c1, c2, c3].map(num).filter(function (v) { return v !== null; });
+    if (vals.length < 2) return null;
+    var mx = Math.max.apply(null, vals), mn = Math.min.apply(null, vals);
+    return mx > 0 ? ((mx - mn) / mx) * 100 : 0;
+  }
+  function dominantPhase(p1, p2, p3) {
+    var arr = [['L1', num(p1)], ['L2', num(p2)], ['L3', num(p3)]].filter(function (x) { return x[1] !== null; });
+    if (!arr.length) return null;
+    arr.sort(function (a, b) { return b[1] - a[1]; });
+    return arr[0][0];
+  }
+  function setBadge(id, level) {
+    var el = $(id); if (!el) return;
+    var label = level === 'crit' ? 'Critical' : (level === 'warn' ? 'Warning' : 'OK');
+    el.textContent = label;
+    el.className = 'an-badge an-' + (level || 'ok');
+  }
+
+  // ── KPI-uri business (azi) ──
+  function updateBusiness(d) {
+    var points = (d && d.history) || [];
+    var live = (d && d.live) || {};
+    var p = live.power || {}, i = live.current || {};
+
+    var energy = energyTodayKwh(points);
+    $('kpi-energy').textContent = energy === null ? '—' : fmt(energy, 2) + ' kWh';
+    $('kpi-cost').textContent = energy === null ? '—' : fmt(energy * TARIFF_RON_PER_KWH, 2) + ' RON';
+
+    var peak = peakTodayW(points);
+    $('kpi-peak').textContent = peak === null ? '—' : fmt(peak, 0) + ' W';
+
+    var dom = dominantPhase(p.l1, p.l2, p.l3);
+    $('kpi-domphase').textContent = dom || '—';
+
+    var unb = currentUnbalance(i.l1, i.l2, i.l3);
+    $('kpi-unbalance').textContent = unb === null ? '—' : fmt(unb, 0) + ' %';
+  }
+
+  // ── Data quality (sursă: filtrarea de pe server) ──
+  function updateDataQuality(d) {
+    var q = d && d.quality;
+    var pctEl = $('dq-pct'), spEl = $('dq-spikes');
+    if (!q) { if (pctEl) pctEl.textContent = '—'; if (spEl) spEl.textContent = ''; return; }
+    if (pctEl) pctEl.textContent = fmt(q.validPct, 1) + '%';
+    if (spEl) spEl.textContent = ' · ' + (q.spikes || 0) + ' spike-uri filtrate';
+  }
+
+  // ── Anomaly detection (din valorile live) ──
+  function updateAnomaly(d) {
+    var live = (d && d.live) || {};
+    var u = live.voltage || {}, i = live.current || {};
+    var q = d && d.quality;
+
+    var volts = [u.l1, u.l2, u.l3].map(function (k) { return clean('voltage', k); }).filter(function (v) { return v !== null; });
+    var vLevel = 'ok';
+    volts.forEach(function (v) {
+      if (v < TH.voltCritMin || v > TH.voltCritMax) vLevel = 'crit';
+      else if ((v < TH.voltWarnMin || v > TH.voltWarnMax) && vLevel !== 'crit') vLevel = 'warn';
+    });
+    setBadge('an-voltage', volts.length ? vLevel : null);
+
+    var curs = [i.l1, i.l2, i.l3].map(function (k) { return clean('current', k); }).filter(function (v) { return v !== null; });
+    var cLevel = 'ok';
+    curs.forEach(function (v) {
+      if (v > TH.currCrit) cLevel = 'crit';
+      else if (v > TH.currWarn && cLevel !== 'crit') cLevel = 'warn';
+    });
+    setBadge('an-current', curs.length ? cLevel : null);
+
+    var unb = currentUnbalance(i.l1, i.l2, i.l3);
+    setBadge('an-balance', unb === null ? null : (unb > TH.unbalanceWarn ? 'warn' : 'ok'));
+
+    setBadge('an-spikes', q ? (q.spikes > 0 ? 'warn' : 'ok') : null);
+  }
 
   // ── Chart ──
   var chartConfig = {
@@ -470,7 +613,12 @@ const reportRows = [
     var killer = setTimeout(function () { ctrl.abort(); }, 12000); // timeout dur
     fetch(API + '?range=' + encodeURIComponent(range), { cache: 'no-store', signal: ctrl.signal })
       .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
-      .then(function (d) { dataCache = d; updateLive(d); drawChart(); failCount = 0; setStatus(true); })
+      .then(function (d) {
+        dataCache = d;
+        updateLive(d); drawChart();
+        updateBusiness(d); updateDataQuality(d); updateAnomaly(d);
+        failCount = 0; setStatus(true);
+      })
       .catch(function (err) {
         failCount++;
         // o eroare izolată nu strică UI-ul; marcăm „indisponibil" doar după 2 la rând
@@ -622,6 +770,7 @@ const reportRows = [
     background: rgba(8,18,30,0.86); border: 1px solid var(--border-cyan);
     color: var(--cyan); font-size: 0.82rem; font-weight: 600;
   }
+  .chart-pending[hidden] { display: none; }
   .chart-tabs { display: inline-flex; gap: 4px; border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 4px; background: rgba(8,18,30,0.7); }
   .chart-tabs button {
     height: 30px; padding: 0 11px; border: 0; border-radius: 4px; cursor: pointer;
@@ -643,12 +792,34 @@ const reportRows = [
   .now-power { display: flex; align-items: baseline; gap: 8px; margin: 10px 0 2px; }
   .now-power strong { font-size: 3rem; font-weight: 800; font-family: 'Courier New', Consolas, monospace; color: var(--green-light); line-height: 1; }
   .now-power span { font-size: 1rem; color: var(--text-muted); }
-  .now-label { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 18px; }
-  .now-energy { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: auto; }
-  .energy-cell { display: flex; flex-direction: column; gap: 3px; padding: 12px; background: rgba(8,18,30,0.55); border: 1px solid var(--border); border-radius: var(--radius); }
-  .ec-period { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-dim); }
-  .ec-value { font-size: 1.2rem; font-weight: 800; font-family: 'Courier New', monospace; color: var(--text-muted); }
-  .ec-badge { font-size: 0.62rem; color: var(--amber); background: var(--amber-dim); border: 1px solid rgba(245,158,11,0.25); border-radius: 3px; padding: 1px 6px; width: fit-content; }
+  .now-label { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 16px; }
+
+  /* KPI-uri business „azi" în cardul NOW */
+  .now-kpis { display: flex; flex-direction: column; margin-top: auto; border-top: 1px solid var(--border); }
+  .nk { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 9px 0; border-bottom: 1px solid rgba(255,255,255,0.04); }
+  .nk:last-child { border-bottom: none; }
+  .nk-label { font-size: 0.78rem; color: var(--text-muted); display: inline-flex; align-items: center; gap: 6px; }
+  .nk-label .est { font-style: normal; font-size: 0.58rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-dim); border: 1px solid var(--border); border-radius: 3px; padding: 0 4px; }
+  .nk-val { font-size: 0.92rem; font-weight: 800; font-family: 'Courier New', Consolas, monospace; color: var(--text); white-space: nowrap; }
+
+  /* Data quality — discret, sub grafic lângă legendă */
+  .chart-foot { display: flex; align-items: center; justify-content: space-between; gap: 14px; margin-top: 4px; flex-wrap: wrap; }
+  .data-quality { font-size: 0.74rem; color: var(--text-dim); display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+  .data-quality b { color: var(--text-muted); font-weight: 700; }
+  .dq-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); box-shadow: 0 0 6px rgba(16,185,129,0.5); }
+
+  /* Stivă dreaptă: Curenți + Anomaly */
+  .right-stack { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+
+  /* Anomaly detection — compact */
+  .anomaly-list { display: flex; flex-direction: column; }
+  .anomaly-list li { display: flex; align-items: center; justify-content: space-between; padding: 9px 0; border-bottom: 1px solid rgba(255,255,255,0.04); }
+  .anomaly-list li:last-child { border-bottom: none; }
+  .an-name { font-size: 0.82rem; color: var(--text-muted); }
+  .an-badge { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.02em; padding: 3px 11px; border-radius: 999px; border: 1px solid var(--border); color: var(--text-dim); }
+  .an-ok { color: var(--green-light); background: var(--green-dim); border-color: var(--border-med); }
+  .an-warn { color: var(--amber); background: var(--amber-dim); border-color: rgba(245,158,11,0.28); }
+  .an-crit { color: var(--red); background: rgba(239,68,68,0.12); border-color: rgba(239,68,68,0.3); }
 
   /* ── Gauges ── */
   .gauge-card { min-width: 0; }
@@ -697,6 +868,5 @@ const reportRows = [
     .brand { border: none; padding: 0; }
     .dash-topbar { flex-direction: column; align-items: flex-start; }
     .kpi-row { grid-template-columns: 1fr 1fr; }
-    .now-energy { grid-template-columns: 1fr 1fr; }
   }
 </style>

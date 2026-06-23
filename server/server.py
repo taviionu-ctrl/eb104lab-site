@@ -149,6 +149,8 @@ from(bucket: "{INFLUX_BUCKET}")
   |> pivot(rowKey: ["_time"], columnKey: ["entity_id"], valueColumn: "_value")
 '''
     points = []
+    measured = 0  # cate valori numerice am primit
+    spikes = 0    # cate au fost respinse ca aberante (in afara limitelor fizice)
     for row in influx_query(flux, timeout=90):  # istoric = greu; rulează în fundal
         timestamp = row.get("_time")
         if not timestamp:
@@ -156,10 +158,16 @@ from(bucket: "{INFLUX_BUCKET}")
         point = {"time": timestamp}
         has_value = False
         for key, entity in ENTITIES.items():
-            value = sanitize(key, row.get(entity))
-            if value is not None:
-                point[key] = value
-                has_value = True
+            raw = row.get(entity)
+            if raw is None or raw == "":
+                continue  # nu a fost masurat in fereastra asta (nu e spike)
+            measured += 1
+            value = sanitize(key, raw)
+            if value is None:
+                spikes += 1  # valoare aberanta -> filtrata
+                continue
+            point[key] = value
+            has_value = True
         if has_value:
             points.append(point)
     points.sort(key=lambda p: p["time"])
@@ -173,7 +181,10 @@ from(bucket: "{INFLUX_BUCKET}")
                 last[key] = point[key]
             elif key in last:
                 point[key] = last[key]
-    return points
+
+    valid_pct = round(100.0 * (measured - spikes) / measured, 1) if measured else 100.0
+    quality = {"validPct": valid_pct, "spikes": spikes, "samples": measured}
+    return points, quality
 
 
 # ── Cache pe istoric (stale-while-revalidate) ──
@@ -188,7 +199,7 @@ TTL_BY_RANGE = {"1h": 15, "3h": 20, "6h": 30, "12h": 30, "24h": 60, "7d": 600}
 DEFAULT_TTL = 30
 WARM_ACTIVE_WINDOW = 600  # mentinem cald un interval cerut in ultimele 10 min
 
-_history_cache = {}        # range -> (timestamp, points)
+_history_cache = {}        # range -> (timestamp, points, quality)
 _history_computing = {}    # range -> bool
 _warm_ranges = {"12h": time.time()}  # range -> ultimul moment cerut (12h e default)
 _cache_lock = threading.Lock()
@@ -200,9 +211,9 @@ def ttl_for(time_range: str) -> int:
 
 def _recompute(time_range: str):
     try:
-        points = history_values(time_range)
+        points, quality = history_values(time_range)
         with _cache_lock:
-            _history_cache[time_range] = (time.time(), points)
+            _history_cache[time_range] = (time.time(), points, quality)
     except Exception:
         pass  # pastram cache-ul vechi; reincercam la urmatoarea tura
     finally:
@@ -220,7 +231,7 @@ def _trigger(time_range: str):
 
 
 def history_values_cached(time_range: str):
-    """Returneaza (points, pending). Nu blocheaza niciodata pe interogarea grea."""
+    """Returneaza (points, pending, quality). Nu blocheaza pe interogarea grea."""
     now = time.time()
     with _cache_lock:
         entry = _history_cache.get(time_range)
@@ -228,8 +239,9 @@ def history_values_cached(time_range: str):
     if not fresh:
         _trigger(time_range)  # reimprospatam in fundal
     points = entry[1] if entry else []
+    quality = entry[2] if entry else None
     pending = entry is None  # inca nu avem deloc date pentru acest interval
-    return points, pending
+    return points, pending, quality
 
 
 def mark_range(time_range: str):
@@ -256,7 +268,7 @@ def _warmer_loop():
 
 def build_summary(time_range: str):
     live_raw, updated_at = latest_values()
-    history, history_pending = history_values_cached(time_range)
+    history, history_pending, quality = history_values_cached(time_range)
     live = {
         "voltage": {
             "l1": live_raw.get("voltage_l1"),
@@ -286,6 +298,7 @@ def build_summary(time_range: str):
         "live": live,
         "history": history,
         "historyPending": history_pending,
+        "quality": quality,
     }
 
 

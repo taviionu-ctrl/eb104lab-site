@@ -40,6 +40,12 @@ const views = [
     icon: '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',
   },
   {
+    id: 'server', group: 'Monitorizare', kind: 'domain',
+    label: 'Monitorizare server',
+    title: 'Monitorizare server', sub: 'Încărcare, temperatură core-uri, memorie, rețea',
+    icon: '<rect x="2" y="2" width="20" height="8" rx="2"/><rect x="2" y="14" width="20" height="8" rx="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/>',
+  },
+  {
     id: 'automations', group: 'Informativ', kind: 'info',
     label: 'Automatizări',
     title: 'Automatizări', sub: 'Rezultate și stare scenarii',
@@ -62,6 +68,10 @@ const previewTiles = {
   solar: [
     { label: 'Putere AC', unit: 'W' }, { label: 'Energie azi', unit: 'kWh' }, { label: 'Tensiune DC', unit: 'V' },
     { label: 'Curent DC', unit: 'A' }, { label: 'Randament invertor', unit: '%' }, { label: 'Flux luminos', unit: 'lux' },
+  ],
+  server: [
+    { label: 'Încărcare CPU', unit: '%' }, { label: 'Temperatură CPU', unit: '°C' }, { label: 'Memorie RAM', unit: '%' },
+    { label: 'Spațiu disc', unit: '%' }, { label: 'Uptime', unit: '' }, { label: 'Trafic rețea', unit: 'Mb/s' },
   ],
 };
 
@@ -685,12 +695,26 @@ const reportRows = [
     var holder = document.querySelector('#chart .c-xlabels');
     if (!holder) return;
     if (!points.length) { holder.innerHTML = ''; return; }
+    // formatul scării se adaptează la plaja afișată:
+    //  - interval scurt (≤ ~36h): oră:minut
+    //  - interval lung (zile, ex. 7d): zi.lună (+ oră dacă < 2 zile)
+    var first = new Date(points[0].time).getTime();
+    var last = new Date(points[points.length - 1].time).getTime();
+    var spanH = (last - first) / 3600000;
+    var fmtLabel;
+    if (spanH <= 36) {
+      fmtLabel = function (d) { return d.toLocaleTimeString('ro-RO', { hour: '2-digit', minute: '2-digit' }); };
+    } else if (spanH <= 60) {
+      fmtLabel = function (d) { return d.toLocaleDateString('ro-RO', { day: '2-digit', month: '2-digit' }) + ' ' + d.toLocaleTimeString('ro-RO', { hour: '2-digit' }); };
+    } else {
+      fmtLabel = function (d) { return d.toLocaleDateString('ro-RO', { day: '2-digit', month: '2-digit' }); };
+    }
     var W = PLOT.vw - PLOT.left - PLOT.right, y = PLOT.vh - PLOT.bottom + 24, steps = 5, out = '';
     for (var i = 0; i <= steps; i++) {
       var idx = Math.round((i / steps) * (points.length - 1));
       var t = points[idx] && points[idx].time;
       if (!t) continue;
-      var label = new Date(t).toLocaleTimeString('ro-RO', { hour: '2-digit', minute: '2-digit' });
+      var label = fmtLabel(new Date(t));
       var x = PLOT.left + (i / steps) * W;
       var anchor = i === 0 ? 'start' : (i === steps ? 'end' : 'middle');
       out += '<text fill="#8fb0cc" font-size="11" font-family="Consolas, monospace" x="' + x.toFixed(1) + '" y="' + y + '" text-anchor="' + anchor + '">' + label + '</text>';
@@ -951,6 +975,7 @@ const reportRows = [
   .ph-mark svg { width: 48px; height: 48px; }
   .ph-mark-airclimate { background: var(--cyan-dim); color: var(--cyan); border-color: var(--border-cyan); }
   .ph-mark-solar { background: var(--amber-dim); color: var(--amber); border-color: rgba(245,158,11,0.28); }
+  .ph-mark-server { background: var(--green-dim); color: var(--green-light); }
   .ph-mark-automations { background: var(--green-dim); color: var(--green-light); }
   .ph-mark-alerts { background: rgba(239,68,68,0.12); color: var(--red); border-color: rgba(239,68,68,0.3); }
   .ph-hero-text h2 { font-size: 1.5rem; font-weight: 800; margin: 8px 0 6px; }

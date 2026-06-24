@@ -1,7 +1,8 @@
-import { defineConfig } from 'astro/config';
+﻿import { defineConfig } from 'astro/config';
 
 export default defineConfig({
-  site: 'https://eb104lab.ro',
+  site: 'https://home.eb104lab.ro',
   output: 'static',
   publicDir: './assets',
 });
+

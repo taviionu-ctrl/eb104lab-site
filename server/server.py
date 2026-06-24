@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+﻿#!/usr/bin/env python3
 import csv
 import io
 import json
@@ -34,9 +34,9 @@ ENTITY_SET = ", ".join([f'"{entity}"' for entity in ENTITIES.values()])
 # Limite fizice plauzibile — valorile din afara intervalului sunt considerate
 # erori de masura (spike-uri, registre brute) si sunt eliminate inainte de afisare.
 BOUNDS = {
-    "voltage": (0.0, 600.0),
-    "current": (0.0, 3000.0),
-    "power": (-100000.0, 100000.0),
+    "voltage": (0.0, 300.0),
+    "current": (0.0, 100.0),
+    "power": (-50000.0, 50000.0),
 }
 
 
@@ -306,18 +306,27 @@ class Handler(BaseHTTPRequestHandler):
     def log_message(self, fmt, *args):
         return
 
-    def send_json(self, status: int, payload: dict):
+    def send_json(self, status: int, payload: dict, include_body: bool = True):
         data = json.dumps(payload, ensure_ascii=False).encode("utf-8")
         self.send_response(status)
         self.send_header("Content-Type", "application/json; charset=utf-8")
         self.send_header("Cache-Control", "no-store")
-        self.send_header("Content-Length", str(len(data)))
+        self.send_header("X-Content-Type-Options", "nosniff")
+        self.send_header("Content-Length", str(len(data) if include_body else 0))
         self.end_headers()
-        self.wfile.write(data)
+        if include_body:
+            self.wfile.write(data)
+
+    def do_HEAD(self):
+        parsed = urlparse(self.path)
+        if parsed.path in {"/health", "/api/health"}:
+            self.send_json(200, {"ok": True, "service": "eb104lab-api"}, include_body=False)
+            return
+        self.send_json(404, {"ok": False, "error": "not_found"}, include_body=False)
 
     def do_GET(self):
         parsed = urlparse(self.path)
-        if parsed.path == "/health":
+        if parsed.path in {"/health", "/api/health"}:
             self.send_json(200, {"ok": True, "service": "eb104lab-api"})
             return
         if parsed.path == "/api/janitza/summary":
@@ -327,7 +336,8 @@ class Handler(BaseHTTPRequestHandler):
             try:
                 self.send_json(200, build_summary(time_range))
             except Exception as exc:
-                self.send_json(502, {"ok": False, "error": str(exc)})
+                print(f"api_error path={parsed.path} range={time_range}: {exc}", flush=True)
+                self.send_json(502, {"ok": False, "error": "upstream_unavailable"})
             return
         self.send_json(404, {"ok": False, "error": "not_found"})
 
@@ -338,3 +348,5 @@ if __name__ == "__main__":
     server = ThreadingHTTPServer(("127.0.0.1", PORT), Handler)
     print(f"eb104lab-api listening on 127.0.0.1:{PORT}", flush=True)
     server.serve_forever()
+
+

@@ -1,0 +1,5 @@
+﻿User-agent: *
+Allow: /
+Disallow: /api/
+Sitemap: https://home.eb104lab.ro/sitemap.xml
+

@@ -185,16 +185,17 @@ const reportRows = [
           <div class="now-label">Putere activă totală</div>
 
           <div class="now-kpis">
+            <div class="nk-caption">Pe intervalul afișat pe grafic</div>
             <div class="nk">
-              <span class="nk-label">Consum azi <i class="est">est.</i></span>
+              <span class="nk-label">Consum · <b class="nk-range" id="rng-e">—</b> <i class="est">est.</i></span>
               <span class="nk-val" id="kpi-energy">—</span>
             </div>
             <div class="nk">
-              <span class="nk-label">Cost azi <i class="est">est.</i></span>
+              <span class="nk-label">Cost · <b class="nk-range" id="rng-c">—</b> <i class="est">est.</i></span>
               <span class="nk-val" id="kpi-cost">—</span>
             </div>
             <div class="nk">
-              <span class="nk-label">Vârf putere azi</span>
+              <span class="nk-label">Vârf putere · <b class="nk-range" id="rng-p">—</b></span>
               <span class="nk-val" id="kpi-peak">—</span>
             </div>
             <div class="nk">
@@ -338,12 +339,10 @@ const reportRows = [
   function num(v) { var n = Number(v); return isFinite(n) ? n : null; }
   function localMidnight() { var d = new Date(); d.setHours(0, 0, 0, 0); return d.getTime(); }
 
-  // Energie (kWh) prin integrare trapezoidală a puterii totale peste punctele de azi.
-  function energyTodayKwh(points) {
-    var from = localMidnight();
-    var pts = points.filter(function (p) {
-      return clean('power_total', p.power_total) !== null && new Date(p.time).getTime() >= from;
-    });
+  // Energie (kWh) prin integrare trapezoidală a puterii totale peste TOT intervalul
+  // afișat pe grafic (nu doar „azi") -> mereu corect, indiferent de range.
+  function energyKwh(points) {
+    var pts = points.filter(function (p) { return clean('power_total', p.power_total) !== null; });
     if (pts.length < 2) return null;
     var wh = 0;
     for (var i = 1; i < pts.length; i++) {
@@ -353,11 +352,11 @@ const reportRows = [
     }
     return wh / 1000;
   }
-  function peakTodayW(points) {
-    var from = localMidnight(), peak = null;
+  function peakW(points) {
+    var peak = null;
     points.forEach(function (p) {
       var v = clean('power_total', p.power_total);
-      if (v !== null && new Date(p.time).getTime() >= from && (peak === null || v > peak)) peak = v;
+      if (v !== null && (peak === null || v > peak)) peak = v;
     });
     return peak;
   }
@@ -381,17 +380,20 @@ const reportRows = [
     el.className = 'an-badge an-' + (level || 'ok');
   }
 
-  // ── KPI-uri business (azi) ──
+  // ── KPI-uri business (consum/cost/vârf = pe intervalul afișat pe grafic) ──
   function updateBusiness(d) {
     var points = (d && d.history) || [];
     var live = (d && d.live) || {};
     var p = live.power || {}, i = live.current || {};
 
-    var energy = energyTodayKwh(points);
+    // eticheta intervalului lângă consum/cost/vârf
+    ['rng-e', 'rng-c', 'rng-p'].forEach(function (id) { var el = $(id); if (el) el.textContent = range; });
+
+    var energy = energyKwh(points);
     $('kpi-energy').textContent = energy === null ? '—' : fmt(energy, 2) + ' kWh';
     $('kpi-cost').textContent = energy === null ? '—' : fmt(energy * TARIFF_RON_PER_KWH, 2) + ' RON';
 
-    var peak = peakTodayW(points);
+    var peak = peakW(points);
     $('kpi-peak').textContent = peak === null ? '—' : fmt(peak, 0) + ' W';
 
     var dom = dominantPhase(p.l1, p.l2, p.l3);
@@ -885,6 +887,8 @@ const reportRows = [
 
   /* KPI-uri business „azi" în cardul NOW */
   .now-kpis { display: flex; flex-direction: column; margin-top: auto; border-top: 1px solid var(--border); }
+  .nk-caption { font-size: 0.64rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-dim); padding: 10px 0 4px; }
+  .nk-range { color: var(--cyan); font-weight: 700; font-family: 'Courier New', monospace; }
   .nk { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 9px 0; border-bottom: 1px solid rgba(255,255,255,0.04); }
   .nk:last-child { border-bottom: none; }
   .nk-label { font-size: 0.78rem; color: var(--text-muted); display: inline-flex; align-items: center; gap: 6px; }

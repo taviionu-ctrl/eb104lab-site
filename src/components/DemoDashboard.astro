@@ -25,19 +25,20 @@ const navItems = [
   { id: 'reports', label: 'Rapoarte', icon: '<rect x="4" y="3" width="16" height="18" rx="2"/><line x1="8" y1="8" x2="16" y2="8"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="8" y1="16" x2="13" y2="16"/>' },
 ];
 
-// Rânduri tabel — decuplate de grafic: calculate dintr-o fereastră fixă de 24h,
-// ca să rămână stabile indiferent de intervalul selectat pe grafic.
+// Rânduri tabel — decuplate de grafic. Surse fixe: 24h (fin) pentru oră/azi,
+// 7d pentru ieri/săptămână. Rămân stabile indiferent de intervalul graficului.
 const reportRows = [
   { key: 'h1', period: 'Ultima oră' },
   { key: 'today', period: 'Astăzi' },
-  { key: 'd24', period: 'Ultimele 24h' },
+  { key: 'yest', period: 'Ieri' },
+  { key: 'd7', period: 'Ultimele 7 zile' },
 ];
 ---
 
 <div class="dash" data-track={GAUGE_TRACK}>
   <!-- ───────── Sidebar ───────── -->
   <aside class="dash-sidebar">
-    <div class="brand">
+    <a class="brand" href="/" title="Înapoi la site">
       <span class="brand-mark">
         <svg viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
           <rect width="28" height="28" rx="6" fill="#0d1e30"/>
@@ -48,7 +49,7 @@ const reportRows = [
         <strong>EB104 Lab</strong>
         <small>Monitorizare energetică</small>
       </span>
-    </div>
+    </a>
 
     <nav class="side-nav">
       {navItems.map(item => (
@@ -75,9 +76,17 @@ const reportRows = [
   <div class="dash-main">
     <!-- Topbar -->
     <header class="dash-topbar">
-      <div class="top-title">
-        <h1>Monitorizare în timp real</h1>
-        <p>Analiză calitate energie · analizor de rețea</p>
+      <div class="top-left">
+        <a href="/" class="back-btn" title="Înapoi la site">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>
+          </svg>
+          <span>Înapoi la site</span>
+        </a>
+        <div class="top-title">
+          <h1>Monitorizare în timp real</h1>
+          <p>Analiză calitate energie · analizor de rețea</p>
+        </div>
       </div>
 
       <div class="top-controls">
@@ -470,21 +479,28 @@ const reportRows = [
     }
   }
 
-  // Tabelul folosește propria fereastră (24h), nu intervalul graficului -> stabil.
-  function updateReports(d) {
-    var points = (d && d.history) || [];
-    var now = Date.now();
-    setReportRow('h1', periodStats(points, now - 3600000, now), now - 3600000, now);
-    var mid = localMidnight();
-    setReportRow('today', periodStats(points, mid, now), mid, now);
-    setReportRow('d24', periodStats(points, now - 86400000, now), now - 86400000, now);
+  // Tabelul are propriile surse fixe (independent de graficul selectat):
+  //  - 24h (rezoluție fină) pentru „Ultima oră" și „Astăzi"
+  //  - 7d pentru „Ieri" și „Ultimele 7 zile"
+  function fetchHistory(rng) {
+    return fetch(API + '?range=' + rng, { cache: 'no-store' })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .catch(function () { return null; });
   }
-
   function loadReports() {
-    fetch(API + '?range=24h', { cache: 'no-store' })
-      .then(function (r) { return r.ok ? r.json() : Promise.reject(); })
-      .then(function (d) { updateReports(d); })
-      .catch(function () { /* păstrăm ultimele valori bune */ });
+    var now = Date.now(), mid = localMidnight(), DAY = 86400000;
+    fetchHistory('24h').then(function (d) {
+      if (!d) return;
+      var p = d.history || [];
+      setReportRow('h1', periodStats(p, now - 3600000, now), now - 3600000, now);
+      setReportRow('today', periodStats(p, mid, now), mid, now);
+    });
+    fetchHistory('7d').then(function (d) {
+      if (!d) return; // 7d încă se calculează -> rândurile rămân „în pregătire"
+      var p = d.history || [];
+      setReportRow('yest', periodStats(p, mid - DAY, mid), mid - DAY, mid);
+      setReportRow('d7', periodStats(p, now - 7 * DAY, now), now - 7 * DAY, now);
+    });
   }
 
   // ── Chart ──
@@ -709,9 +725,9 @@ const reportRows = [
   loadData();
   timer = window.setInterval(loadData, REFRESH_MS);
 
-  // Tabelul de rapoarte are propriul ritm (mai rar) și propria sursă (24h)
+  // Tabelul de rapoarte are propriul ritm (mai rar) și surse proprii (24h + 7d)
   loadReports();
-  window.setInterval(loadReports, 15000);
+  window.setInterval(loadReports, 30000);
 })();
 </script>
 
@@ -739,7 +755,8 @@ const reportRows = [
     top: 0;
     height: 100vh;
   }
-  .brand { display: flex; align-items: center; gap: 11px; padding: 6px 6px 16px; border-bottom: 1px solid var(--border); }
+  .brand { display: flex; align-items: center; gap: 11px; padding: 6px 6px 16px; border-bottom: 1px solid var(--border); text-decoration: none; transition: var(--transition); }
+  .brand:hover { opacity: 0.82; }
   .brand-mark svg { width: 34px; height: 34px; }
   .brand-text { display: flex; flex-direction: column; line-height: 1.15; }
   .brand-text strong { font-size: 1rem; font-weight: 800; }
@@ -773,6 +790,15 @@ const reportRows = [
     background: rgba(8,18,30,0.7); backdrop-filter: blur(8px);
     position: sticky; top: 0; z-index: 10;
   }
+  .top-left { display: flex; align-items: center; gap: 16px; min-width: 0; }
+  .back-btn {
+    display: inline-flex; align-items: center; gap: 8px; flex-shrink: 0;
+    padding: 9px 14px; border: 1px solid var(--border-med); border-radius: var(--radius-sm);
+    color: var(--text-muted); font-size: 0.82rem; font-weight: 600; text-decoration: none;
+    background: rgba(8,18,30,0.6); transition: var(--transition);
+  }
+  .back-btn:hover { color: var(--green-light); border-color: var(--green); background: var(--green-dim); transform: translateX(-2px); }
+  .back-btn svg { width: 16px; height: 16px; }
   .top-title h1 { font-size: 1.3rem; font-weight: 800; letter-spacing: -0.01em; }
   .top-title p { font-size: 0.78rem; color: var(--text-muted); margin-top: 2px; }
 

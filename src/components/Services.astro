@@ -126,11 +126,13 @@ const services = [
     gap: 20px;
   }
 
-  /* Cards */
+  /* Cards — premium */
   .service-card {
-    background: var(--card);
+    background:
+      linear-gradient(180deg, rgba(255,255,255,0.022), transparent 38%),
+      var(--card);
     border-radius: var(--radius-lg);
-    padding: 28px 26px 24px;
+    padding: 26px 24px 22px;
     border: 1px solid var(--border);
     transition: var(--transition);
     display: flex;
@@ -140,6 +142,26 @@ const services = [
     overflow: hidden;
   }
 
+  /* glow radial care urmează cardul la hover */
+  /* conținutul deasupra glow-ului */
+  .service-card > * { position: relative; z-index: 1; }
+
+  .service-card::after {
+    content: '';
+    position: absolute;
+    top: -40%; right: -30%;
+    width: 220px; height: 220px;
+    border-radius: 50%;
+    opacity: 0;
+    filter: blur(50px);
+    transition: opacity 0.4s ease;
+    pointer-events: none;
+    z-index: 0;
+  }
+  .card-green::after { background: rgba(16,185,129,0.16); }
+  .card-cyan::after  { background: rgba(6,182,212,0.16); }
+  .card-amber::after { background: rgba(245,158,11,0.14); }
+
   .service-card::before {
     content: '';
     position: absolute;
@@ -147,6 +169,7 @@ const services = [
     height: 2px;
     opacity: 0;
     transition: opacity 0.3s ease;
+    z-index: 1;
   }
 
   .card-green::before { background: linear-gradient(90deg, var(--green), transparent); }
@@ -155,12 +178,14 @@ const services = [
 
   .service-card:hover {
     border-color: var(--border-med);
-    background: var(--card-hover);
-    transform: translateY(-3px);
-    box-shadow: var(--shadow);
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-lg);
   }
+  .card-green:hover { box-shadow: var(--shadow-lg), var(--glow-green); }
+  .card-cyan:hover  { box-shadow: var(--shadow-lg), var(--glow-cyan); }
 
   .service-card:hover::before { opacity: 1; }
+  .service-card:hover::after { opacity: 1; }
 
   .card-top {
     display: flex;

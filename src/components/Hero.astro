@@ -2,6 +2,9 @@
 ---
 <section id="hero" class="hero grid-bg">
   <div class="hero-glow"></div>
+  <div class="glow-orb green" style="width:520px; height:520px; top:-140px; left:-90px;"></div>
+  <div class="glow-orb cyan" style="width:440px; height:440px; bottom:-160px; right:6%; opacity:0.32;"></div>
+  <div class="hero-scan" aria-hidden="true"></div>
 
   <div class="container hero-inner">
     <!-- Left: text -->
@@ -14,7 +17,7 @@
       <h1 class="hero-title" data-reveal data-delay="80">
         Monitorizare<br>
         Energetică și<br>
-        <span class="accent-green">Automatizări</span><br>
+        <span class="grad-text">Automatizări</span><br>
         Tehnice
       </h1>
 
@@ -40,17 +43,15 @@
       </div>
 
       <div class="hero-stats" data-reveal data-delay="380">
-        <div class="stat">
+        <div class="stat glass">
           <span class="stat-val">Timp real</span>
           <span class="stat-lbl">Date actualizate continuu</span>
         </div>
-        <div class="stat-div"></div>
-        <div class="stat">
+        <div class="stat glass">
           <span class="stat-val">Pe 3 faze</span>
           <span class="stat-lbl">Tensiune · curent · putere</span>
         </div>
-        <div class="stat-div"></div>
-        <div class="stat">
+        <div class="stat glass">
           <span class="stat-val">100% Local</span>
           <span class="stat-lbl">Fără cloud obligatoriu</span>
         </div>
@@ -121,6 +122,22 @@
     pointer-events: none;
   }
 
+  /* Linie de scanare — senzație de „date live / senzor" */
+  .hero-scan {
+    position: absolute;
+    left: 0; right: 0; top: 0;
+    height: 140px;
+    background: linear-gradient(180deg, rgba(16,185,129,0.06), transparent);
+    pointer-events: none;
+    animation: heroScan 7s linear infinite;
+    opacity: 0.7;
+  }
+  @keyframes heroScan {
+    0%   { transform: translateY(-140px); }
+    100% { transform: translateY(100vh); }
+  }
+  @media (prefers-reduced-motion: reduce) { .hero-scan { display: none; } }
+
   .hero-inner {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -130,16 +147,22 @@
     z-index: 1;
   }
 
-  /* Eyebrow */
+  /* Eyebrow — pill glass */
   .hero-eyebrow {
-    display: flex;
+    display: inline-flex;
     align-items: center;
     gap: 9px;
-    font-size: 0.8rem;
+    font-size: 0.78rem;
     color: var(--green-light);
     font-weight: 600;
     letter-spacing: 0.04em;
-    margin-bottom: 22px;
+    margin-bottom: 24px;
+    padding: 7px 15px;
+    border-radius: 999px;
+    background: var(--glass-bg);
+    border: 1px solid var(--border-med);
+    backdrop-filter: blur(var(--blur));
+    -webkit-backdrop-filter: blur(var(--blur));
   }
 
   /* Title */
@@ -171,29 +194,32 @@
     margin-bottom: 56px;
   }
 
-  /* Stats */
+  /* Stats — carduri glass */
   .hero-stats {
-    display: flex;
-    align-items: center;
-    gap: 24px;
-    padding-top: 32px;
-    border-top: 1px solid var(--border);
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-top: 8px;
   }
 
-  .stat-div {
-    width: 1px;
-    height: 32px;
-    background: var(--border);
-    flex-shrink: 0;
+  .stat {
+    padding: 14px 16px;
+    border-radius: var(--radius);
+    transition: var(--transition);
+  }
+  .stat:hover {
+    transform: translateY(-3px);
+    border-color: var(--border-med);
+    box-shadow: var(--glow-green);
   }
 
   .stat-val {
     display: block;
-    font-size: 0.88rem;
+    font-size: 0.9rem;
     font-weight: 700;
-    color: var(--text);
+    color: var(--green-light);
     font-family: 'Courier New', Consolas, monospace;
-    margin-bottom: 2px;
+    margin-bottom: 3px;
   }
 
   .stat-lbl {
@@ -322,15 +348,11 @@
     .hero-img { height: 340px; }
     .img-fade-left { display: none; }
 
-    .hero-stats { gap: 16px; }
-    .stat-div { height: 24px; }
-
     .scroll-hint { display: none; }
   }
 
   @media (max-width: 540px) {
     .hero-title { font-size: 2.2rem; }
-    .hero-stats { flex-wrap: wrap; }
-    .stat-div { display: none; }
+    .hero-stats { grid-template-columns: 1fr; }
   }
 </style>

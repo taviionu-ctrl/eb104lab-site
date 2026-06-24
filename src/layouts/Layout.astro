@@ -44,13 +44,23 @@ const {
       --text-muted: #7a9bb8;
       --text-dim:   #3a566e;
 
-      --radius-sm: 4px;
-      --radius:    8px;
-      --radius-lg: 14px;
+      --radius-sm: 6px;
+      --radius:    10px;
+      --radius-lg: 16px;
+      --radius-xl: 22px;
 
-      --transition: all 0.22s ease;
+      --transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
       --shadow:     0 4px 24px rgba(0,0,0,0.45);
-      --shadow-lg:  0 12px 48px rgba(0,0,0,0.55);
+      --shadow-lg:  0 18px 50px rgba(0,0,0,0.55);
+
+      /* Glassmorphism */
+      --glass-bg:     rgba(18, 34, 52, 0.5);
+      --glass-border: rgba(180, 220, 255, 0.07);
+      --blur:         14px;
+
+      /* Glow */
+      --glow-green: 0 0 0 1px rgba(16,185,129,0.18), 0 8px 32px rgba(16,185,129,0.12);
+      --glow-cyan:  0 0 0 1px rgba(6,182,212,0.18), 0 8px 32px rgba(6,182,212,0.12);
     }
 
     *, *::before, *::after {
@@ -69,6 +79,23 @@ const {
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
       overflow-x: hidden;
+    }
+
+    /* Aurora de fundal — glow difuz, fix, în spatele conținutului (premium, ieftin) */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      pointer-events: none;
+      background:
+        radial-gradient(900px 520px at 82% -6%, rgba(6,182,212,0.07), transparent 60%),
+        radial-gradient(820px 520px at -5% 102%, rgba(16,185,129,0.06), transparent 55%);
+    }
+
+    /* Cifre/date aliniate (tabular) acolo unde folosim monospace */
+    code, kbd, samp, .mono, [class*="-val"], [class*="-num"] {
+      font-variant-numeric: tabular-nums;
     }
 
     a { color: inherit; text-decoration: none; }
@@ -108,24 +135,38 @@ const {
     }
 
     .btn-primary {
-      background: var(--green);
-      color: #07120d;
+      background: linear-gradient(135deg, var(--green-light) 0%, var(--green) 55%, #0c9b6b 100%);
+      color: #04130c;
+      box-shadow: 0 2px 14px rgba(16,185,129,0.28), inset 0 1px 0 rgba(255,255,255,0.22);
+      position: relative;
+      overflow: hidden;
+    }
+    /* sclipire fină la hover */
+    .btn-primary::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(110deg, transparent 30%, rgba(255,255,255,0.35) 50%, transparent 70%);
+      transform: translateX(-120%);
+      transition: transform 0.6s ease;
     }
     .btn-primary:hover {
-      background: var(--green-light);
       transform: translateY(-2px);
-      box-shadow: 0 6px 24px rgba(16,185,129,0.38);
+      box-shadow: 0 10px 30px rgba(16,185,129,0.42), inset 0 1px 0 rgba(255,255,255,0.25);
     }
+    .btn-primary:hover::after { transform: translateX(120%); }
 
     .btn-secondary {
-      background: transparent;
+      background: rgba(255,255,255,0.02);
       color: var(--text);
       border: 1.5px solid var(--border-med);
+      backdrop-filter: blur(6px);
     }
     .btn-secondary:hover {
       border-color: var(--green);
       color: var(--green-light);
       transform: translateY(-2px);
+      box-shadow: 0 8px 28px rgba(16,185,129,0.14);
     }
 
     .btn-outline-cyan {
@@ -240,6 +281,72 @@ const {
         linear-gradient(rgba(16,185,129,0.035) 1px, transparent 1px),
         linear-gradient(90deg, rgba(16,185,129,0.035) 1px, transparent 1px);
       background-size: 56px 56px;
+    }
+
+    /* ─── Glassmorphism ─── */
+    .glass {
+      background: var(--glass-bg);
+      backdrop-filter: blur(var(--blur));
+      -webkit-backdrop-filter: blur(var(--blur));
+      border: 1px solid var(--glass-border);
+    }
+
+    /* ─── Glow orb decorativ (poziționat absolut de componentă) ─── */
+    .glow-orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(64px);
+      opacity: 0.5;
+      pointer-events: none;
+      z-index: 0;
+    }
+    .glow-orb.green { background: radial-gradient(circle, rgba(16,185,129,0.5), transparent 70%); }
+    .glow-orb.cyan  { background: radial-gradient(circle, rgba(6,182,212,0.45), transparent 70%); }
+    .glow-orb.amber { background: radial-gradient(circle, rgba(245,158,11,0.32), transparent 70%); }
+
+    /* ─── Card premium (bază reutilizabilă, hover elegant) ─── */
+    .card-premium {
+      position: relative;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.025), transparent 40%),
+        var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      transition: var(--transition);
+      overflow: hidden;
+    }
+    .card-premium::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      padding: 1px;
+      background: linear-gradient(135deg, rgba(16,185,129,0.35), transparent 45%);
+      -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      pointer-events: none;
+    }
+    .card-premium:hover {
+      transform: translateY(-4px);
+      border-color: var(--border-med);
+      box-shadow: var(--shadow-lg), var(--glow-green);
+    }
+    .card-premium:hover::before { opacity: 1; }
+
+    /* ─── Text cu accent gradient ─── */
+    .grad-text {
+      background: linear-gradient(120deg, var(--green-light), var(--cyan));
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      color: transparent;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .btn-primary::after { display: none; }
     }
 
     /* ─── Scroll reveal animations ─── */

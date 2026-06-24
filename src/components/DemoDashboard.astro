@@ -17,13 +17,64 @@ function describeArc(cx, cy, r, startAngle, endAngle) {
 }
 const GAUGE_TRACK = describeArc(60, 60, 44, 225, 495);
 
-const navItems = [
-  { id: 'overview', label: 'Sumar', active: true, icon: '<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>' },
-  { id: 'voltage', label: 'Tensiuni', icon: '<polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>' },
-  { id: 'current', label: 'Curenți', icon: '<path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>' },
-  { id: 'power', label: 'Putere', icon: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/>' },
-  { id: 'reports', label: 'Rapoarte', icon: '<rect x="4" y="3" width="16" height="18" rx="2"/><line x1="8" y1="8" x2="16" y2="8"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="8" y1="16" x2="13" y2="16"/>' },
+// Secțiunile din meniul lateral. „energy" conține dashboard-ul complet existent;
+// restul sunt sisteme pregătite (preview parametri) până la integrarea datelor.
+const views = [
+  {
+    id: 'energy', label: 'Monitorizare calitate energie', active: true,
+    title: 'Monitorizare calitate energie', sub: 'Analizor de rețea · tensiuni, curenți, putere',
+    icon: '<polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>',
+  },
+  {
+    id: 'air', label: 'Monitorizare calitate aer',
+    title: 'Monitorizare calitate aer', sub: 'CO₂, particule, compuși volatili, confort',
+    icon: '<path d="M3 8h13a3 3 0 1 0-3-3"/><path d="M3 12h17a3 3 0 1 1-3 3"/><path d="M3 16h9a3 3 0 1 1-3 3"/>',
+  },
+  {
+    id: 'solar', label: 'Producție fotovoltaică',
+    title: 'Producție fotovoltaică', sub: 'Invertor, producție, randament, flux luminos',
+    icon: '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',
+  },
+  {
+    id: 'server', label: 'Monitorizare server',
+    title: 'Monitorizare server', sub: 'Încărcare, temperatură core-uri, memorie, rețea',
+    icon: '<rect x="2" y="2" width="20" height="8" rx="2"/><rect x="2" y="14" width="20" height="8" rx="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/>',
+  },
+  {
+    id: 'climate', label: 'Climatizare & confort',
+    title: 'Climatizare & confort', sub: 'Temperatură, umiditate, ventilație, setpoint',
+    icon: '<path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z"/>',
+  },
+  {
+    id: 'alerts', label: 'Alerte & evenimente',
+    title: 'Alerte & evenimente', sub: 'Istoric alarme, praguri și notificări',
+    icon: '<path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/>',
+  },
 ];
+
+// Preview-ul parametrilor pentru secțiunile pregătite (afișați ca „în pregătire").
+const previewTiles = {
+  air: [
+    { label: 'CO₂', unit: 'ppm' }, { label: 'PM2.5', unit: 'µg/m³' }, { label: 'PM10', unit: 'µg/m³' },
+    { label: 'Temperatură', unit: '°C' }, { label: 'Umiditate', unit: '%' }, { label: 'COV', unit: 'index' },
+  ],
+  solar: [
+    { label: 'Putere AC', unit: 'W' }, { label: 'Energie azi', unit: 'kWh' }, { label: 'Tensiune DC', unit: 'V' },
+    { label: 'Curent DC', unit: 'A' }, { label: 'Randament invertor', unit: '%' }, { label: 'Flux luminos', unit: 'lux' },
+  ],
+  server: [
+    { label: 'Încărcare CPU', unit: '%' }, { label: 'Temperatură CPU', unit: '°C' }, { label: 'Memorie RAM', unit: '%' },
+    { label: 'Spațiu disc', unit: '%' }, { label: 'Uptime', unit: '' }, { label: 'Trafic rețea', unit: 'Mb/s' },
+  ],
+  climate: [
+    { label: 'Temperatură', unit: '°C' }, { label: 'Umiditate', unit: '%' }, { label: 'Ventilație', unit: '%' },
+    { label: 'Setpoint', unit: '°C' }, { label: 'Mod', unit: '' }, { label: 'Calitate aer', unit: 'index' },
+  ],
+  alerts: [
+    { label: 'Alarme active', unit: '' }, { label: 'Avertismente', unit: '' }, { label: 'Evenimente azi', unit: '' },
+    { label: 'Praguri configurate', unit: '' },
+  ],
+};
 
 // Rânduri tabel — decuplate de grafic. Surse fixe: 24h (fin) pentru oră/azi,
 // 7d pentru ieri/săptămână. Rămân stabile indiferent de intervalul graficului.
@@ -52,11 +103,17 @@ const reportRows = [
     </a>
 
     <nav class="side-nav">
-      {navItems.map(item => (
-        <a href={`#${item.id}`} class={`side-link${item.active ? ' active' : ''}`}>
+      {views.map(item => (
+        <button
+          type="button"
+          class={`side-link${item.active ? ' active' : ''}`}
+          data-view={item.id}
+          data-title={item.title}
+          data-sub={item.sub}
+        >
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" set:html={item.icon} />
           <span>{item.label}</span>
-        </a>
+        </button>
       ))}
     </nav>
 
@@ -84,12 +141,12 @@ const reportRows = [
           <span>Înapoi la site</span>
         </a>
         <div class="top-title">
-          <h1>Monitorizare în timp real</h1>
-          <p>Analiză calitate energie · analizor de rețea</p>
+          <h1 id="view-title">Monitorizare calitate energie</h1>
+          <p id="view-sub">Analizor de rețea · tensiuni, curenți, putere</p>
         </div>
       </div>
 
-      <div class="top-controls">
+      <div class="top-controls" id="top-controls">
         <div class="range-select" role="tablist" aria-label="Interval istoric">
           <button type="button" data-range="1h">1h</button>
           <button type="button" data-range="6h">6h</button>
@@ -107,8 +164,10 @@ const reportRows = [
 
     <!-- Scrollable dashboard area -->
     <div class="dash-scroll">
+      <!-- ░░░ Secțiunea: Monitorizare calitate energie ░░░ -->
+      <section class="view active" id="view-energy" data-view-panel>
       <!-- KPI: putere pe faze + total -->
-      <div class="grid-row kpi-row">
+      <div class="grid-row kpi-row" data-anim>
         <article class="card kpi kpi-l1">
           <div class="kpi-head"><span class="dot dot-l1"></span>Putere L1</div>
           <div class="kpi-value"><strong id="pw-l1">--</strong><span>W</span></div>
@@ -132,7 +191,7 @@ const reportRows = [
       </div>
 
       <!-- Chart + NOW -->
-      <div class="grid-row main-row">
+      <div class="grid-row main-row" data-anim>
         <article class="card chart-card">
           <div class="card-head">
             <div>
@@ -211,7 +270,7 @@ const reportRows = [
       </div>
 
       <!-- Gauges tensiuni + curenți -->
-      <div class="grid-row gauge-row">
+      <div class="grid-row gauge-row" data-anim>
         <article class="card gauge-card">
           <div class="card-head"><div><span class="card-kicker">Tensiuni</span><h2>Fază–nul (0–300 V)</h2></div></div>
           <div class="gauges">
@@ -265,7 +324,7 @@ const reportRows = [
       </div>
 
       <!-- Tabel rapoarte -->
-      <div class="grid-row">
+      <div class="grid-row" data-anim>
         <article class="card table-card">
           <div class="card-head">
             <div><span class="card-kicker">Rapoarte</span><h2>Consum &amp; energie</h2></div>
@@ -291,6 +350,36 @@ const reportRows = [
           </div>
         </article>
       </div>
+      </section>
+
+      <!-- ░░░ Secțiuni pregătite (preview parametri) ░░░ -->
+      {views.filter(v => v.id !== 'energy').map(v => (
+        <section class="view" id={`view-${v.id}`} data-view-panel hidden>
+          <div class="ph-hero" data-anim>
+            <div class={`ph-mark ph-mark-${v.id}`}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" set:html={v.icon} />
+            </div>
+            <div class="ph-hero-text">
+              <span class="ph-badge"><span class="pulse-dot"></span>Sistem în pregătire</span>
+              <h2>{v.title}</h2>
+              <p>{v.sub}. Integrarea datelor este în curs — structura de mai jos arată ce vom monitoriza.</p>
+            </div>
+          </div>
+
+          <div class="ph-grid" data-anim>
+            {(previewTiles[v.id] || []).map(t => (
+              <article class="card ph-tile">
+                <span class="ph-tile-label">{t.label}</span>
+                <span class="ph-tile-val">—</span>
+                <span class="ph-tile-foot">
+                  {t.unit && <em class="ph-unit">{t.unit}</em>}
+                  <span class="ph-pending">în pregătire</span>
+                </span>
+              </article>
+            ))}
+          </div>
+        </section>
+      ))}
     </div>
   </div>
 </div>
@@ -723,9 +812,51 @@ const reportRows = [
     });
   });
 
+  // ── Navigație între secțiuni + animație de intrare ──
+  var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  function playEnter(view) {
+    if (!view || reduceMotion) return;
+    var items = view.querySelectorAll('[data-anim]');
+    items.forEach(function (el, idx) {
+      el.style.animation = 'none';
+      void el.offsetWidth; // forțăm reflow ca animația să repornească
+      el.style.animation = 'viewIn 0.55s cubic-bezier(0.16,1,0.3,1) both';
+      el.style.animationDelay = Math.min(idx * 70, 480) + 'ms';
+    });
+  }
+
+  function switchView(id) {
+    var target = document.getElementById('view-' + id);
+    if (!target) return;
+    document.querySelectorAll('[data-view-panel]').forEach(function (s) {
+      s.classList.toggle('active', s === target);
+      s.hidden = s !== target;
+    });
+    document.querySelectorAll('.side-nav .side-link').forEach(function (b) {
+      b.classList.toggle('active', b.getAttribute('data-view') === id);
+    });
+    var btn = document.querySelector('.side-nav .side-link[data-view="' + id + '"]');
+    if (btn) {
+      var t = $('view-title'), sub = $('view-sub');
+      if (t) t.textContent = btn.getAttribute('data-title') || '';
+      if (sub) sub.textContent = btn.getAttribute('data-sub') || '';
+    }
+    // controalele de interval/live sunt relevante doar pe secțiunea „energie"
+    var tc = $('top-controls');
+    if (tc) tc.style.display = (id === 'energy') ? '' : 'none';
+    document.querySelector('.dash-scroll').scrollTop = 0;
+    playEnter(target);
+  }
+
+  document.querySelectorAll('.side-nav .side-link').forEach(function (btn) {
+    btn.addEventListener('click', function () { switchView(btn.getAttribute('data-view')); });
+  });
+
   // ── Start ──
   loadData();
   timer = window.setInterval(loadData, REFRESH_MS);
+  playEnter(document.getElementById('view-energy')); // animație la prima încărcare
 
   // Tabelul de rapoarte are propriul ritm (mai rar) și surse proprii (24h + 7d)
   loadReports();
@@ -766,14 +897,72 @@ const reportRows = [
 
   .side-nav { display: flex; flex-direction: column; gap: 4px; }
   .side-link {
-    display: flex; align-items: center; gap: 11px;
+    display: flex; align-items: center; gap: 11px; width: 100%; text-align: left;
     padding: 10px 12px; border-radius: var(--radius-sm);
-    color: var(--text-muted); font-size: 0.88rem; font-weight: 500;
-    transition: var(--transition);
+    color: var(--text-muted); font-size: 0.85rem; font-weight: 500; line-height: 1.25;
+    background: none; border: 0; cursor: pointer; font-family: inherit;
+    position: relative; transition: var(--transition);
   }
   .side-link svg { width: 18px; height: 18px; flex-shrink: 0; }
+  .side-link span { min-width: 0; }
   .side-link:hover { background: rgba(16,185,129,0.07); color: var(--text); }
   .side-link.active { background: var(--green-dim); color: var(--green-light); }
+  .side-link.active::before { content: ''; position: absolute; left: 0; top: 8px; bottom: 8px; width: 3px; border-radius: 3px; background: var(--green); }
+
+  /* ── Comutare secțiuni ── */
+  .view[hidden] { display: none; }
+  .view { display: flex; flex-direction: column; gap: 16px; }
+
+  @keyframes viewIn {
+    from { opacity: 0; transform: translateY(18px); }
+    to   { opacity: 1; transform: none; }
+  }
+
+  /* ── Secțiuni pregătite (preview) ── */
+  .ph-hero {
+    display: flex; align-items: center; gap: 22px;
+    padding: 30px; border-radius: var(--radius-lg);
+    border: 1px solid var(--border); background:
+      radial-gradient(600px 200px at 12% 0%, rgba(16,185,129,0.07), transparent 70%),
+      var(--card);
+    overflow: hidden; position: relative;
+  }
+  .ph-mark {
+    width: 92px; height: 92px; flex-shrink: 0; border-radius: 22px;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--green-dim); color: var(--green-light);
+    border: 1px solid var(--border-med);
+  }
+  .ph-mark svg { width: 48px; height: 48px; }
+  .ph-mark-air { background: var(--cyan-dim); color: var(--cyan); border-color: var(--border-cyan); }
+  .ph-mark-solar { background: var(--amber-dim); color: var(--amber); border-color: rgba(245,158,11,0.28); }
+  .ph-mark-server { background: var(--green-dim); color: var(--green-light); }
+  .ph-mark-climate { background: var(--cyan-dim); color: var(--cyan); border-color: var(--border-cyan); }
+  .ph-mark-alerts { background: rgba(239,68,68,0.12); color: var(--red); border-color: rgba(239,68,68,0.3); }
+  .ph-hero-text h2 { font-size: 1.5rem; font-weight: 800; margin: 8px 0 6px; }
+  .ph-hero-text p { font-size: 0.9rem; color: var(--text-muted); max-width: 560px; line-height: 1.6; }
+  .ph-badge {
+    display: inline-flex; align-items: center; gap: 8px; font-size: 0.72rem; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.08em; color: var(--amber);
+  }
+  .ph-badge .pulse-dot { background: var(--amber); box-shadow: 0 0 8px var(--amber); }
+
+  .ph-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .ph-tile {
+    display: flex; flex-direction: column; gap: 8px; min-height: 104px;
+    border: 1px solid var(--border); background: var(--card);
+  }
+  .ph-tile-label { font-size: 0.78rem; color: var(--text-muted); font-weight: 600; }
+  .ph-tile-val { font-size: 1.8rem; font-weight: 800; font-family: 'Courier New', Consolas, monospace; color: var(--text-dim); line-height: 1; margin-top: auto; }
+  .ph-tile-foot { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .ph-unit { font-style: normal; font-size: 0.74rem; color: var(--text-dim); font-family: 'Courier New', monospace; }
+  .ph-pending { font-size: 0.62rem; color: var(--amber); background: var(--amber-dim); border: 1px solid rgba(245,158,11,0.25); border-radius: 999px; padding: 2px 9px; }
+
+  @media (max-width: 1100px) { .ph-grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 760px) {
+    .ph-grid { grid-template-columns: 1fr 1fr; }
+    .ph-hero { flex-direction: column; align-items: flex-start; text-align: left; gap: 16px; padding: 22px; }
+  }
 
   .side-foot { margin-top: auto; display: flex; flex-direction: column; gap: 12px; }
   .side-source { display: flex; flex-direction: column; gap: 2px; padding: 12px; background: rgba(8,18,30,0.6); border: 1px solid var(--border); border-radius: var(--radius); }

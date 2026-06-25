@@ -45,6 +45,15 @@ const specs = [
 
 <section id="proiect" class="demo-section">
   <div class="demo-bg-glow" data-parallax="0.08"></div>
+
+  <!-- Semnal animat (osciloscop) -->
+  <svg class="demo-wave" viewBox="0 0 1200 120" preserveAspectRatio="none" fill="none" aria-hidden="true">
+    <path d="M0 60 Q60 10 120 60 T240 60 T360 60 T480 60 T600 60 T720 60 T840 60 T960 60 T1080 60 T1200 60"
+          stroke="rgba(16,185,129,0.2)" stroke-width="1.6" class="flow-dash"/>
+    <path d="M0 60 Q80 100 160 60 T320 60 T480 60 T640 60 T800 60 T960 60 T1120 60 T1280 60"
+          stroke="rgba(6,182,212,0.16)" stroke-width="1.4" class="flow-dash-slow"/>
+  </svg>
+
   <div class="container">
     <div class="demo-header" data-reveal>
       <p class="section-label">Proiect demonstrativ</p>
@@ -159,6 +168,13 @@ const specs = [
     position: relative;
     overflow: hidden;
   }
+  .demo-wave {
+    position: absolute;
+    left: 0; right: 0; top: 30%;
+    width: 100%; height: 220px;
+    z-index: 0; pointer-events: none;
+  }
+  .demo-section .container { position: relative; z-index: 1; }
 
   .demo-bg-glow {
     position: absolute;

@@ -285,6 +285,29 @@ const {
       50%       { opacity: 0.35; box-shadow: 0 0 3px var(--green); }
     }
 
+    /* ═══ Animații tehnice reutilizabile ═══ */
+    @keyframes spinSlow  { to { transform: rotate(360deg); } }
+    @keyframes spinRev   { to { transform: rotate(-360deg); } }
+    @keyframes dashFlow  { to { stroke-dashoffset: -1000; } }
+    @keyframes dashDraw  { to { stroke-dashoffset: 0; } }
+    @keyframes floatY    { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-12px); } }
+    @keyframes pulseRing { 0% { transform: scale(0.55); opacity: 0.85; } 100% { transform: scale(1.9); opacity: 0; } }
+    @keyframes blink     { 0%,100% { opacity: 1; } 50% { opacity: 0.25; } }
+
+    .spin-slow  { animation: spinSlow 44s linear infinite;  transform-origin: center; }
+    .spin-mid   { animation: spinSlow 26s linear infinite;  transform-origin: center; }
+    .spin-rev   { animation: spinRev 32s linear infinite;   transform-origin: center; }
+    .spin-fast  { animation: spinSlow 14s linear infinite;  transform-origin: center; }
+    .flow-dash  { stroke-dasharray: 5 11; animation: dashFlow 3.2s linear infinite; }
+    .flow-dash-slow { stroke-dasharray: 4 16; animation: dashFlow 6s linear infinite; }
+    .float-y    { animation: floatY 6s ease-in-out infinite; }
+    .blink      { animation: blink 2.4s ease-in-out infinite; }
+
+    @media (prefers-reduced-motion: reduce) {
+      .spin-slow, .spin-mid, .spin-rev, .spin-fast,
+      .flow-dash, .flow-dash-slow, .float-y, .blink { animation: none !important; }
+    }
+
     /* ─── Grid texture utility ─── */
     .grid-bg {
       background-image:

@@ -67,6 +67,18 @@ const services = [
 
 <section id="servicii" class="services-section">
   <div class="services-bg-glow"></div>
+
+  <!-- Circuite cu „curent" care curge -->
+  <svg class="svc-circuit" viewBox="0 0 1200 320" preserveAspectRatio="none" fill="none" aria-hidden="true">
+    <path d="M0 70 H280 V180 H560 V50 H840 V230 H1200" stroke="rgba(16,185,129,0.16)" stroke-width="1.4" class="flow-dash"/>
+    <path d="M0 250 H180 V120 H470 V270 H760 V90 H1040 V210 H1200" stroke="rgba(6,182,212,0.14)" stroke-width="1.4" class="flow-dash-slow"/>
+    <circle cx="280" cy="70" r="3.5" fill="#34d399" class="blink"/>
+    <circle cx="560" cy="50" r="3.5" fill="#34d399" class="blink" style="animation-delay:-0.8s"/>
+    <circle cx="840" cy="230" r="3.5" fill="#34d399" class="blink" style="animation-delay:-1.6s"/>
+    <circle cx="470" cy="270" r="3" fill="#06b6d4" class="blink" style="animation-delay:-1.2s"/>
+    <circle cx="760" cy="90" r="3" fill="#06b6d4" class="blink" style="animation-delay:-0.4s"/>
+  </svg>
+
   <div class="container">
     <div class="services-header" data-reveal>
       <p class="section-label">Ce oferim</p>
@@ -114,6 +126,20 @@ const services = [
       transparent 65%);
     pointer-events: none;
   }
+
+  .svc-circuit {
+    position: absolute;
+    left: 0; right: 0; top: 8%;
+    width: 100%; height: 70%;
+    z-index: 0;
+    pointer-events: none;
+  }
+  .services-section .container { position: relative; z-index: 1; }
+
+  /* iconițe care plutesc ușor (decalate) */
+  .card-icon { animation: floatY 7s ease-in-out infinite; }
+  .service-card:nth-child(3n+2) .card-icon { animation-delay: -2.3s; }
+  .service-card:nth-child(3n)   .card-icon { animation-delay: -4.6s; }
 
   .services-header {
     margin-bottom: 64px;

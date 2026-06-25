@@ -122,12 +122,15 @@ const audience = [
     display: flex;
     align-items: center;
     justify-content: center;
+    animation: floatY 7s ease-in-out infinite;
     background: var(--green-dim);
     border-radius: var(--radius);
     flex-shrink: 0;
   }
 
   .fw-icon svg { width: 22px; height: 22px; }
+  .fw-card:nth-child(3n+2) .fw-icon { animation-delay: -2.3s; }
+  .fw-card:nth-child(3n)   .fw-icon { animation-delay: -4.6s; }
 
   .fw-title {
     font-size: 1rem;

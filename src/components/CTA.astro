@@ -4,6 +4,17 @@
   <div class="cta-bg-glow cta-glow-left"></div>
   <div class="cta-bg-glow cta-glow-right"></div>
 
+  <!-- inele de puls + schemă rotativă -->
+  <div class="cta-rings" aria-hidden="true">
+    <span class="cta-ring"></span>
+    <span class="cta-ring" style="animation-delay:-1.3s"></span>
+    <span class="cta-ring" style="animation-delay:-2.6s"></span>
+  </div>
+  <svg class="cta-schematic spin-slow" viewBox="0 0 200 200" fill="none" aria-hidden="true">
+    <circle cx="100" cy="100" r="92" stroke="rgba(16,185,129,0.16)" stroke-width="1" stroke-dasharray="2 9"/>
+    <circle cx="100" cy="100" r="64" stroke="rgba(6,182,212,0.14)" stroke-width="1" stroke-dasharray="40 14"/>
+  </svg>
+
   <div class="container">
     <div class="cta-inner" data-reveal="scale">
       <div class="cta-badge">
@@ -78,6 +89,33 @@
     transform: translateY(-50%);
     pointer-events: none;
   }
+
+  .cta-section .container { position: relative; z-index: 1; }
+
+  .cta-rings {
+    position: absolute;
+    top: 32%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 0; height: 0;
+    z-index: 0; pointer-events: none;
+  }
+  .cta-ring {
+    position: absolute;
+    left: 50%; top: 50%;
+    width: 360px; height: 360px;
+    margin: -180px 0 0 -180px;
+    border: 1px solid rgba(16,185,129,0.3);
+    border-radius: 50%;
+    animation: pulseRing 4s ease-out infinite;
+  }
+  .cta-schematic {
+    position: absolute;
+    width: 340px; height: 340px;
+    top: 28%; right: 6%;
+    z-index: 0; opacity: 0.5; pointer-events: none;
+  }
+  @media (prefers-reduced-motion: reduce) { .cta-ring { animation: none; opacity: 0.2; } }
+  @media (max-width: 760px) { .cta-schematic { display: none; } }
 
   .cta-glow-left {
     left: -15%;

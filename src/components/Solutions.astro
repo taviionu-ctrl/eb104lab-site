@@ -70,29 +70,24 @@ const steps = [
       </p>
     </div>
 
-    <!-- Flow diagram -->
-    <div class="flow-pipeline">
-      {steps.map((step, i) => (
-        <>
-          <div class={`flow-node node-${step.color}`} data-reveal="scale" data-delay={i * 110}>
-            <div class={`node-num num-${step.color}`}>{step.id}</div>
-            <div class={`node-icon icon-${step.color}`} set:html={step.icon} />
-            <h4 class="node-title">{step.title}</h4>
-            <ul class="node-items">
+    <!-- Timeline vertical — se animează la scroll -->
+    <div class="timeline" data-progress-line>
+      <div class="tl-rail"><span class="tl-fill"></span></div>
+      {steps.map((step) => (
+        <div class={`tl-step tl-${step.color}`} data-step>
+          <div class="tl-marker">
+            <span class="tl-num">{step.id}</span>
+            <div class="tl-icon" set:html={step.icon} />
+          </div>
+          <div class="tl-card">
+            <h4 class="tl-title">{step.title}</h4>
+            <ul class="tl-items">
               {step.items.map(item => (
                 <li>{item}</li>
               ))}
             </ul>
           </div>
-          {i < steps.length - 1 && (
-            <div class={`flow-arrow arr-${step.color}`} style={`--flow-delay:${i * 0.35}s`}>
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                <path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-              <span class="flow-spark"></span>
-            </div>
-          )}
-        </>
+        </div>
       ))}
     </div>
 
@@ -117,146 +112,108 @@ const steps = [
     max-width: 680px;
   }
 
-  /* Pipeline */
-  .flow-pipeline {
-    display: flex;
-    align-items: flex-start;
-    gap: 0;
-    overflow-x: auto;
-    padding-bottom: 16px;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: thin;
-  }
-
-  /* Flow node */
-  .flow-node {
-    flex: 1;
-    min-width: 152px;
-    background: var(--card);
-    border-radius: var(--radius);
-    padding: 22px 18px 20px;
-    border: 1px solid var(--border);
-    transition: var(--transition);
+  /* ── Timeline vertical scrollytelling ── */
+  .timeline {
+    position: relative;
+    --progress: 0;
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 6px;
+  }
+
+  /* rail + fill care urmează scroll-ul (--progress setat din JS) */
+  .tl-rail {
+    position: absolute;
+    left: 27px; top: 18px; bottom: 18px;
+    width: 2px;
+    background: var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .tl-fill {
+    position: absolute;
+    left: 0; top: 0; right: 0;
+    height: calc(var(--progress, 0) * 100%);
+    background: linear-gradient(180deg, var(--green-light), var(--cyan));
+    box-shadow: 0 0 12px rgba(16,185,129,0.55);
+    transition: height 0.12s linear;
+  }
+
+  .tl-step {
     position: relative;
+    display: grid;
+    grid-template-columns: 56px 1fr;
+    gap: 18px;
+    align-items: start;
+    padding: 12px 0;
   }
 
-  .flow-node:hover {
-    transform: translateY(-4px);
-    border-color: var(--border-med);
-    box-shadow: var(--shadow);
+  /* estompat implicit -> se aprinde la scroll */
+  .js .tl-step {
+    opacity: 0.36;
+    transform: translateX(16px);
+    filter: saturate(0.3);
+    transition: opacity 0.55s ease, transform 0.55s cubic-bezier(0.16,1,0.3,1), filter 0.55s ease;
   }
+  .js .tl-step.step-active { opacity: 1; transform: none; filter: none; }
 
-  .node-green:hover { border-color: rgba(16,185,129,0.35); box-shadow: 0 8px 32px rgba(16,185,129,0.1); }
-  .node-cyan:hover  { border-color: rgba(6,182,212,0.35);  box-shadow: 0 8px 32px rgba(6,182,212,0.1); }
-  .node-amber:hover { border-color: rgba(245,158,11,0.35); box-shadow: 0 8px 32px rgba(245,158,11,0.1); }
-
-  .node-num {
-    font-size: 0.62rem;
+  .tl-marker {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
+  .tl-num {
+    font-size: 0.6rem;
     font-weight: 800;
     font-family: 'Courier New', monospace;
-    letter-spacing: 0.05em;
-    padding: 2px 7px;
-    border-radius: 3px;
-    width: fit-content;
-  }
-
-  .num-green { color: var(--green);  background: var(--green-dim); }
-  .num-cyan  { color: var(--cyan);   background: var(--cyan-dim); }
-  .num-amber { color: var(--amber);  background: var(--amber-dim); }
-
-  .node-icon {
-    width: 36px; height: 36px;
-    display: flex; align-items: center; justify-content: center;
-    border-radius: var(--radius-sm);
-  }
-  .node-icon svg { width: 20px; height: 20px; }
-
-  .icon-green { color: var(--green); }
-  .icon-cyan  { color: var(--cyan); }
-  .icon-amber { color: var(--amber); }
-
-  .node-title {
-    font-size: 0.9rem;
-    font-weight: 700;
-    color: var(--text);
-    line-height: 1.2;
-  }
-
-  .node-items {
-    list-style: none;
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-  }
-
-  .node-items li {
-    font-size: 0.78rem;
-    color: var(--text-muted);
-    padding-left: 12px;
-    position: relative;
-  }
-
-  .node-items li::before {
-    content: '›';
-    position: absolute;
-    left: 0;
     color: var(--text-dim);
+    transition: var(--transition);
   }
-
-  /* Arrow between nodes */
-  .flow-arrow {
-    position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0 6px;
-    flex-shrink: 0;
-    margin-top: 60px;
+  .tl-icon {
+    width: 48px; height: 48px;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 14px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    transition: var(--transition);
   }
+  .tl-icon svg { width: 22px; height: 22px; }
 
-  .flow-arrow svg {
-    animation: arrowPulse 2.1s ease-in-out infinite;
-    animation-delay: var(--flow-delay, 0s);
+  .tl-green.step-active .tl-icon { color: var(--green-light); border-color: var(--border-med); box-shadow: var(--glow-green); }
+  .tl-cyan.step-active  .tl-icon { color: var(--cyan);        border-color: var(--border-cyan); box-shadow: var(--glow-cyan); }
+  .tl-amber.step-active .tl-icon { color: var(--amber);       border-color: rgba(245,158,11,0.3); box-shadow: 0 0 0 1px rgba(245,158,11,0.2), 0 8px 28px rgba(245,158,11,0.12); }
+  .step-active .tl-num { color: var(--green-light); }
+
+  .tl-card {
+    background:
+      linear-gradient(180deg, rgba(255,255,255,0.02), transparent 40%),
+      var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 18px 22px;
+    transition: var(--transition);
   }
+  .tl-step.step-active .tl-card { border-color: var(--border-med); box-shadow: var(--shadow); }
 
-  @keyframes arrowPulse {
-    0%, 100% { opacity: 0.35; transform: translateX(0); }
-    50%      { opacity: 1;    transform: translateX(2px); }
-  }
-
-  /* Spark — punct de date care „curge" pe traseu */
-  .flow-spark {
-    position: absolute;
-    top: 50%;
-    left: 2px;
-    width: 5px;
-    height: 5px;
-    border-radius: 50%;
-    background: currentColor;
-    box-shadow: 0 0 8px currentColor;
-    transform: translateY(-50%);
-    opacity: 0;
-    animation: sparkFlow 2.1s ease-in-out infinite;
-    animation-delay: var(--flow-delay, 0s);
-  }
-
-  @keyframes sparkFlow {
-    0%   { left: 0;    opacity: 0; }
-    20%  { opacity: 1; }
-    80%  { opacity: 1; }
-    100% { left: 100%; opacity: 0; }
-  }
-
-  .arr-green { color: var(--green); }
-  .arr-cyan  { color: var(--cyan); }
-  .arr-amber { color: var(--amber); }
+  .tl-title { font-size: 1.05rem; font-weight: 700; color: var(--text); margin-bottom: 10px; }
+  .tl-items { list-style: none; display: grid; grid-template-columns: 1fr 1fr; gap: 6px 18px; }
+  .tl-items li { font-size: 0.84rem; color: var(--text-muted); padding-left: 14px; position: relative; }
+  .tl-items li::before { content: '›'; position: absolute; left: 0; color: var(--text-dim); }
 
   @media (prefers-reduced-motion: reduce) {
-    .flow-arrow svg { animation: none; opacity: 0.5; }
-    .flow-spark { display: none; }
+    .js .tl-step { opacity: 1 !important; transform: none !important; filter: none !important; }
+    .tl-fill { transition: none; }
+  }
+
+  @media (max-width: 640px) {
+    .tl-items { grid-template-columns: 1fr; }
+    .tl-step { gap: 12px; grid-template-columns: 46px 1fr; }
+    .tl-rail { left: 22px; }
+    .tl-icon { width: 40px; height: 40px; }
   }
 
   /* Footer note */
@@ -282,18 +239,4 @@ const steps = [
 
   .sol-note svg { color: var(--cyan); flex-shrink: 0; margin-top: 1px; }
 
-  @media (max-width: 900px) {
-    .flow-pipeline {
-      flex-direction: column;
-      overflow-x: visible;
-    }
-
-    .flow-arrow {
-      transform: rotate(90deg);
-      margin: 0 auto;
-      padding: 4px 0;
-    }
-
-    .flow-node { min-width: auto; }
-  }
 </style>

@@ -414,28 +414,58 @@ const {
         revealEls.forEach(function (el) { io.observe(el); });
       }
 
-      // ─── Parallax subtil pe elemente cu data-parallax ───
-      if (!reduce) {
-        var parallaxEls = Array.prototype.slice.call(document.querySelectorAll('[data-parallax]'));
-        if (parallaxEls.length) {
-          var ticking = false;
-          var update = function () {
-            var vh = window.innerHeight;
-            parallaxEls.forEach(function (el) {
-              var rect = el.getBoundingClientRect();
-              if (rect.bottom < 0 || rect.top > vh) return;
-              var speed = parseFloat(el.getAttribute('data-parallax')) || 0.08;
-              var offset = (rect.top + rect.height / 2 - vh / 2) * -speed;
-              el.style.transform = 'translate3d(0,' + offset.toFixed(1) + 'px,0)';
-            });
-            ticking = false;
-          };
-          window.addEventListener('scroll', function () {
-            if (!ticking) { window.requestAnimationFrame(update); ticking = true; }
-          }, { passive: true });
-          update();
+      if (reduce) return;
+
+      // ═══ Motor de scroll (rAF) — animații scrubate de scroll ═══
+      var clamp = function (v, a, b) { return Math.max(a, Math.min(b, v)); };
+
+      // Hero cinematic (straturi care se mișcă diferit la scroll)
+      var hero = document.getElementById('hero');
+      var heroText = hero && hero.querySelector('.hero-text');
+      var heroMedia = hero && hero.querySelector('.img-frame');
+      var orbGreen = hero && hero.querySelector('.glow-orb.green');
+      var orbCyan = hero && hero.querySelector('.glow-orb.cyan');
+
+      var parallaxEls = Array.prototype.slice.call(document.querySelectorAll('[data-parallax]'));
+      var lines = Array.prototype.slice.call(document.querySelectorAll('[data-progress-line]'));
+
+      var ticking = false;
+      function update() {
+        var vh = window.innerHeight, sy = window.pageYOffset;
+
+        if (hero) {
+          var t = clamp(sy / (vh * 0.85), 0, 1);
+          if (heroText) { heroText.style.transform = 'translate3d(0,' + (t * -72).toFixed(1) + 'px,0)'; heroText.style.opacity = (1 - t * 0.92).toFixed(3); }
+          if (heroMedia) { heroMedia.style.transform = 'translate3d(0,' + (t * 50).toFixed(1) + 'px,0) scale(' + (1 + t * 0.08).toFixed(3) + ')'; }
+          if (orbGreen) orbGreen.style.transform = 'translate3d(0,' + (t * -150).toFixed(1) + 'px,0)';
+          if (orbCyan) orbCyan.style.transform = 'translate3d(0,' + (t * 120).toFixed(1) + 'px,0)';
         }
+
+        parallaxEls.forEach(function (el) {
+          var rect = el.getBoundingClientRect();
+          if (rect.bottom < 0 || rect.top > vh) return;
+          var speed = parseFloat(el.getAttribute('data-parallax')) || 0.08;
+          var offset = (rect.top + rect.height / 2 - vh / 2) * -speed;
+          el.style.transform = 'translate3d(0,' + offset.toFixed(1) + 'px,0)';
+        });
+
+        // Timeline: linie de progres care se umple + pași care se activează la scroll
+        lines.forEach(function (el) {
+          var rect = el.getBoundingClientRect();
+          var prog = clamp((vh * 0.62 - rect.top) / (rect.height * 0.72), 0, 1);
+          el.style.setProperty('--progress', prog.toFixed(3));
+          var steps = el.querySelectorAll('[data-step]');
+          for (var i = 0; i < steps.length; i++) {
+            var on = prog >= (i + 0.15) / steps.length;
+            steps[i].classList.toggle('step-active', on);
+          }
+        });
+
+        ticking = false;
       }
+      window.addEventListener('scroll', function () { if (!ticking) { window.requestAnimationFrame(update); ticking = true; } }, { passive: true });
+      window.addEventListener('resize', update, { passive: true });
+      update();
     })();
   </script>
 </body>

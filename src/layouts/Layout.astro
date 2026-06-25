@@ -86,12 +86,22 @@ const {
       content: '';
       position: fixed;
       inset: 0;
-      z-index: -1;
+      z-index: -2;
       pointer-events: none;
       background:
         radial-gradient(900px 520px at 82% -6%, rgba(6,182,212,0.07), transparent 60%),
         radial-gradient(820px 520px at -5% 102%, rgba(16,185,129,0.06), transparent 55%);
     }
+
+    /* Fundal animat — rețea de particule (senzori), fixă, în spate */
+    #bg-canvas {
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      pointer-events: none;
+      opacity: 0.55;
+    }
+    @media (prefers-reduced-motion: reduce) { #bg-canvas { display: none; } }
 
     /* Cifre/date aliniate (tabular) acolo unde folosim monospace */
     code, kbd, samp, .mono, [class*="-val"], [class*="-num"] {
@@ -352,9 +362,9 @@ const {
     /* ─── Scroll reveal animations ─── */
     .js [data-reveal] {
       opacity: 0;
-      transform: translateY(28px);
-      transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1),
-                  transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+      transform: translateY(40px);
+      transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1),
+                  transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
       will-change: opacity, transform;
     }
 
@@ -390,7 +400,60 @@ const {
   </style>
 </head>
 <body>
+  <canvas id="bg-canvas" aria-hidden="true"></canvas>
   <slot />
+
+  <!-- Fundal animat: rețea de particule (senzori/date) -->
+  <script is:inline>
+    (function () {
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+      var canvas = document.getElementById('bg-canvas');
+      if (!canvas) return;
+      var ctx = canvas.getContext('2d');
+      var dpr = Math.min(window.devicePixelRatio || 1, 2);
+      var W = 0, H = 0, pts = [], maxd = 150, raf = null;
+
+      function build() {
+        W = window.innerWidth; H = window.innerHeight;
+        canvas.width = W * dpr; canvas.height = H * dpr;
+        canvas.style.width = W + 'px'; canvas.style.height = H + 'px';
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        var count = W < 720 ? 0 : Math.min(86, Math.floor(W / 20));
+        pts = [];
+        for (var i = 0; i < count; i++) {
+          pts.push({ x: Math.random() * W, y: Math.random() * H, vx: (Math.random() - 0.5) * 0.16, vy: (Math.random() - 0.5) * 0.16 });
+        }
+      }
+
+      function frame() {
+        ctx.clearRect(0, 0, W, H);
+        for (var i = 0; i < pts.length; i++) {
+          var p = pts[i];
+          p.x += p.vx; p.y += p.vy;
+          if (p.x < 0 || p.x > W) p.vx *= -1;
+          if (p.y < 0 || p.y > H) p.vy *= -1;
+          ctx.beginPath(); ctx.arc(p.x, p.y, 1.4, 0, 6.2832);
+          ctx.fillStyle = 'rgba(52,211,153,0.6)'; ctx.fill();
+          for (var j = i + 1; j < pts.length; j++) {
+            var q = pts[j], dx = p.x - q.x, dy = p.y - q.y, d = Math.sqrt(dx * dx + dy * dy);
+            if (d < maxd) {
+              ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(q.x, q.y);
+              ctx.strokeStyle = 'rgba(6,182,212,' + (0.16 * (1 - d / maxd)).toFixed(3) + ')';
+              ctx.lineWidth = 1; ctx.stroke();
+            }
+          }
+        }
+        raf = window.requestAnimationFrame(frame);
+      }
+      function start() { if (raf) cancelAnimationFrame(raf); frame(); }
+      function stop() { if (raf) { cancelAnimationFrame(raf); raf = null; } }
+
+      build(); start();
+      var rt;
+      window.addEventListener('resize', function () { clearTimeout(rt); rt = setTimeout(function () { build(); }, 200); }, { passive: true });
+      document.addEventListener('visibilitychange', function () { document.hidden ? stop() : start(); });
+    })();
+  </script>
 
   <script is:inline>
     (function () {

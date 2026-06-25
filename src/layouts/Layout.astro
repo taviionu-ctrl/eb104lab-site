@@ -412,6 +412,7 @@ const {
       var ctx = canvas.getContext('2d');
       var dpr = Math.min(window.devicePixelRatio || 1, 2);
       var W = 0, H = 0, pts = [], maxd = 150, raf = null;
+      var mouse = { x: -9999, y: -9999, on: false };
 
       function build() {
         W = window.innerWidth; H = window.innerHeight;
@@ -432,8 +433,20 @@ const {
           p.x += p.vx; p.y += p.vy;
           if (p.x < 0 || p.x > W) p.vx *= -1;
           if (p.y < 0 || p.y > H) p.vy *= -1;
-          ctx.beginPath(); ctx.arc(p.x, p.y, 1.4, 0, 6.2832);
-          ctx.fillStyle = 'rgba(52,211,153,0.6)'; ctx.fill();
+          // reacție la cursor: nodurile din apropiere sunt ușor atrase + se aprind
+          var near = false;
+          if (mouse.on) {
+            var mdx = mouse.x - p.x, mdy = mouse.y - p.y, md = Math.sqrt(mdx * mdx + mdy * mdy);
+            if (md < 170) {
+              near = true;
+              p.x += mdx * 0.004; p.y += mdy * 0.004;
+              ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(mouse.x, mouse.y);
+              ctx.strokeStyle = 'rgba(52,211,153,' + (0.4 * (1 - md / 170)).toFixed(3) + ')';
+              ctx.lineWidth = 1; ctx.stroke();
+            }
+          }
+          ctx.beginPath(); ctx.arc(p.x, p.y, near ? 2.2 : 1.4, 0, 6.2832);
+          ctx.fillStyle = near ? 'rgba(52,211,153,0.95)' : 'rgba(52,211,153,0.6)'; ctx.fill();
           for (var j = i + 1; j < pts.length; j++) {
             var q = pts[j], dx = p.x - q.x, dy = p.y - q.y, d = Math.sqrt(dx * dx + dy * dy);
             if (d < maxd) {
@@ -452,6 +465,11 @@ const {
       var rt;
       window.addEventListener('resize', function () { clearTimeout(rt); rt = setTimeout(function () { build(); }, 200); }, { passive: true });
       document.addEventListener('visibilitychange', function () { document.hidden ? stop() : start(); });
+      // cursor (doar pe dispozitive cu mouse)
+      if (window.matchMedia('(pointer: fine)').matches) {
+        window.addEventListener('mousemove', function (e) { mouse.x = e.clientX; mouse.y = e.clientY; mouse.on = true; }, { passive: true });
+        window.addEventListener('mouseout', function () { mouse.on = false; });
+      }
     })();
   </script>
 
